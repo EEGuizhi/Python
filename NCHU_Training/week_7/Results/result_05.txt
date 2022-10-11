@@ -1,0 +1,68 @@
+# 2022/8/24 9:36 (用birds_copy)
+
+>> Using cuda device
+>> Training...
+Batch：0/58388  | Loss：6.0260
+Batch：1280/58388  | Loss：6.2686
+Batch：2560/58388  | Loss：6.0016
+Batch：3840/58388  | Loss：5.8698
+Batch：5120/58388  | Loss：5.8139
+Batch：6400/58388  | Loss：5.6776
+Batch：7680/58388  | Loss：5.6632
+Batch：8960/58388  | Loss：5.5002
+Batch：10240/58388  | Loss：5.4215
+Batch：11520/58388  | Loss：5.3280
+Batch：12800/58388  | Loss：5.1813
+Batch：14080/58388  | Loss：5.1724
+Batch：15360/58388  | Loss：5.2326
+Batch：16640/58388  | Loss：4.9532
+Batch：17920/58388  | Loss：4.9248
+Batch：19200/58388  | Loss：4.9526
+Batch：20480/58388  | Loss：4.9481
+Batch：21760/58388  | Loss：4.8187
+Batch：23040/58388  | Loss：5.0131
+Batch：24320/58388  | Loss：4.7623
+Batch：25600/58388  | Loss：4.6999
+Batch：26880/58388  | Loss：4.5274
+Batch：28160/58388  | Loss：4.6257
+Batch：29440/58388  | Loss：4.7171
+Batch：30720/58388  | Loss：4.3635
+Batch：32000/58388  | Loss：4.5334
+Batch：33280/58388  | Loss：4.3612
+Batch：34560/58388  | Loss：4.2371
+Batch：35840/58388  | Loss：4.2992
+Batch：37120/58388  | Loss：4.1673
+Batch：38400/58388  | Loss：4.2361
+Batch：39680/58388  | Loss：4.2192
+Batch：40960/58388  | Loss：3.8836
+Batch：42240/58388  | Loss：4.1821
+Batch：43520/58388  | Loss：4.0348
+Batch：44800/58388  | Loss：4.2034
+Batch：46080/58388  | Loss：3.8993
+Batch：47360/58388  | Loss：3.8361
+Batch：48640/58388  | Loss：3.9105
+Batch：49920/58388  | Loss：3.4625
+Batch：51200/58388  | Loss：3.5962
+Batch：52480/58388  | Loss：3.5532
+Batch：53760/58388  | Loss：3.5805
+>> Testing...
+Traceback (most recent call last):
+  File "d:\學校相關\大學專題\專題前訓練\week_7\week7_4109061012.py", line 110, in <module>
+    for x_test, y_test in test_loader:
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\dataloader.py", line 652, in __next__     
+    data = self._next_data()
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\dataloader.py", line 692, in _next_data   
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\_utils\fetch.py", line 49, in fetch       
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\_utils\fetch.py", line 49, in <listcomp>  
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "d:\學校相關\大學專題\專題前訓練\week_7\week7_4109061012.py", line 35, in __getitem__
+    image = self.transform(image)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\transforms.py", line 94, in __call__
+    img = t(img)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\transforms.py", line 134, in __call__
+    return F.to_tensor(pic)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\functional.py", line 138, in to_tensor
+    raise TypeError(f"pic should be PIL Image or ndarray. Got {type(pic)}")
+TypeError: pic should be PIL Image or ndarray. Got <class 'torch.Tensor'>

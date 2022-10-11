@@ -1,0 +1,13 @@
+# 2022/8/23 16:39
+
+File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\_utils\fetch.py", line 49, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "d:\學校相關\大學專題\專題前訓練\week_7\week7_4109061012.py", line 35, in __getitem__
+    image = self.transform(image)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\transforms.py", line 94, in __call__
+    img = t(img)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\transforms.py", line 134, in __call__
+    return F.to_tensor(pic)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\functional.py", line 138, in to_tensor
+    raise TypeError(f"pic should be PIL Image or ndarray. Got {type(pic)}")
+TypeError: pic should be PIL Image or ndarray. Got <class 'torch.Tensor'>

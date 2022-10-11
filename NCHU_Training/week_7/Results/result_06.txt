@@ -1,0 +1,72 @@
+# 2022/8/24 17:25
+
+>> Using cuda device
+>> Training...
+Batch：0/58388  | Loss：6.1697
+Batch：1280/58388  | Loss：6.1388
+Batch：2560/58388  | Loss：5.8952
+Batch：3840/58388  | Loss：5.9392
+Batch：5120/58388  | Loss：5.6887
+Batch：6400/58388  | Loss：5.6926
+Batch：7680/58388  | Loss：5.4907
+Batch：8960/58388  | Loss：5.3139
+Batch：10240/58388  | Loss：5.0267
+Batch：11520/58388  | Loss：5.1906
+Batch：12800/58388  | Loss：5.1773
+Batch：14080/58388  | Loss：5.0980
+Batch：15360/58388  | Loss：5.1114
+Batch：16640/58388  | Loss：5.1366
+Batch：17920/58388  | Loss：4.9534
+Batch：19200/58388  | Loss：4.9859
+Batch：20480/58388  | Loss：5.0091
+Batch：21760/58388  | Loss：4.9412
+Batch：23040/58388  | Loss：4.9908
+Batch：24320/58388  | Loss：4.8517
+Batch：25600/58388  | Loss：4.5955
+Batch：26880/58388  | Loss：4.6851
+Batch：28160/58388  | Loss：4.5000
+Batch：29440/58388  | Loss：4.5611
+Batch：30720/58388  | Loss：4.6456
+Batch：32000/58388  | Loss：4.3637
+Batch：33280/58388  | Loss：4.3813
+Batch：34560/58388  | Loss：4.0489
+Batch：35840/58388  | Loss：4.1820
+Batch：37120/58388  | Loss：4.3639
+Batch：38400/58388  | Loss：4.6311
+Batch：39680/58388  | Loss：4.0797
+Batch：40960/58388  | Loss：4.1157
+Batch：42240/58388  | Loss：4.1324
+Batch：43520/58388  | Loss：4.2398
+Batch：44800/58388  | Loss：4.1880
+Batch：46080/58388  | Loss：3.7343
+Batch：47360/58388  | Loss：3.9160
+Batch：48640/58388  | Loss：3.8228
+Batch：49920/58388  | Loss：3.8412
+Batch：51200/58388  | Loss：3.9460
+Batch：52480/58388  | Loss：3.7416
+Batch：53760/58388  | Loss：3.7791
+>> Testing...
+Traceback (most recent call last):
+  File "d:\學校相關\大學專題\專題前訓練\week_7\week7_4109061012.py", line 109, in <module>
+    for x_test, y_test in test_loader:
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\dataloader.py", line 652, in __next__     
+    data = self._next_data()
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\dataloader.py", line 692, in _next_data   
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\_utils\fetch.py", line 49, in fetch       
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\utils\data\_utils\fetch.py", line 49, in <listcomp>  
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "d:\學校相關\大學專題\專題前訓練\week_7\week7_4109061012.py", line 35, in __getitem__
+    image = self.transform(image)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\transforms.py", line 94, in __call__
+    img = t(img)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\module.py", line 1130, in _call_impl      
+    return forward_call(*input, **kwargs)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\transforms.py", line 269, in forward
+    return F.normalize(tensor, self.mean, self.std, self.inplace)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\functional.py", line 360, in normalize
+    return F_t.normalize(tensor, mean=mean, std=std, inplace=inplace)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\transforms\functional_tensor.py", line 940, in normalize
+    raise TypeError(f"Input tensor should be a float tensor. Got {tensor.dtype}.")
+TypeError: Input tensor should be a float tensor. Got torch.uint8.

@@ -1,0 +1,32 @@
+# 2022/8/24 9:12 (用birds_copy)
+
+>> Using cuda device
+>> Training...
+Traceback (most recent call last):
+  File "d:\學校相關\大學專題\專題前訓練\week_7\week7_4109061012.py", line 88, in <module>
+    y_train = model(x_train)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "d:\學校相關\大學專題\專題前訓練\week_7\week7_4109061012.py", line 47, in forward
+    x = self.net(x)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\models\resnet.py", line 285, in forward
+    return self._forward_impl(x)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\models\resnet.py", line 273, in _forward_impl
+    x = self.layer1(x)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\container.py", line 139, in forward
+    input = module(input)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torchvision\models\resnet.py", line 93, in forward
+    out = self.bn1(out)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\modules\batchnorm.py", line 168, in forward
+    return F.batch_norm(
+  File "C:\Users\danie\AppData\Local\Programs\Python\Python39\lib\site-packages\torch\nn\functional.py", line 2438, in batch_norm
+    return torch.batch_norm(
+RuntimeError: CUDA out of memory. Tried to allocate 196.00 MiB (GPU 0; 4.00 GiB total capacity; 3.25 GiB already allocated; 0 bytes free; 3.46 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
