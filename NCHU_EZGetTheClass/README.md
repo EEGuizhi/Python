@@ -4,7 +4,7 @@
 ## 簡介：
 使用方法我有做一個小簡報，<br>
 請見以下連結：<br><br>
-https://docs.google.com/document/d/1xObRVpN-WTYYfXbaeAHf7GYRKWkVaYIAEYU10Up-nbs/edit?usp=sharing <br>
+https://drive.google.com/drive/folders/1ivBWSdHe0baJt4Hd5gkhvXuSw5hwRrIw?usp=sharing <br>
 
 其實我之前有把程式碼包裝成執行檔，<br>
 但包完後被認定有危險==。<br>
