@@ -157,20 +157,6 @@ def choosing():
         option = int(input('請輸入選項(數字): '))
     return option
 
-def confirm_name():
-    namelist = ['姓名：陳柏翔', '姓名：黃鈺雯', '姓名：詹皓暐', '姓名：陳昱翰', '姓名：張宸']
-    soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
-    soup = soup.find('ul', id="profile")
-    username = soup.find('li').getText()
-    i = 1
-    for user in namelist:
-        if user == username:
-            break
-        i += 1
-    if i == len(namelist)+1:
-        return 0
-    return i
-
 def check_time():
     print('\n>> 確認選課時間...')
     driver.get("https://docs.google.com/forms/d/1SyBdPDQHheTE1NkGFfnNAj-_k-salY5MFlGlHnNQ7tI/viewform?edit_requested=true")
@@ -209,11 +195,6 @@ def test_program():
     soup = soup.find('ul', id="profile")
     username = soup.find('li').getText()
     print('\n>> 使用者'+username)
-    UserID = confirm_name()
-    if UserID == 0:
-        print('>> 您不屬於服務範圍內, 但仍可使用體育搶課功能')
-    else:
-        print('>> 您在服務範圍內')
     try:
         print('\n>> 回報測試')
         driver.get("https://docs.google.com/forms/d/1SyBdPDQHheTE1NkGFfnNAj-_k-salY5MFlGlHnNQ7tI/viewform?edit_requested=true")
@@ -599,10 +580,6 @@ def main(user_id, password):
         link = driver.find_element_by_link_text("選課") #找到選課網址
     except:
         print('\n>> 登入錯誤') #登入失敗(找不到'選課'按鈕)
-        return 0
-    success = confirm_name()
-    if (option == 2 and success == 0) or (option == 3 and success == 0):
-        print('\n>> 此功能不在服務範圍內')
         return 0
     driver.get(link.get_attribute('href')) #連到選課網址
 
