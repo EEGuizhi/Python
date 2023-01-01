@@ -76,11 +76,11 @@ def login(user_id, password): #在興大入口網頁進行登入動作
     except:
         return 1
     try:
-        element = driver.find_element("id",value="heading5") #點擊登入
+        element = driver.find_element("id",value="login_btn") #點擊登入
     except:
-        try: #另一種方式(備案)
+        try:
             soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
-            element = soup.find('a', string='登入') #用文字搜尋
+            element = soup.find('button', string='登入') #用文字搜尋
             element = driver.find_element("xpath",value=xpath_soup(element))
         except:
             return 1
@@ -214,35 +214,35 @@ def main(user_id, password, class_id, amount): #微型通識主要部分
             print('      備註: ', text[9].getText())
     return 0
 
-#我田的內容是
-start_program()
-options = webdriver.ChromeOptions() #background execute webdriver
-options.add_argument('--headless')
-try:
-    driver = webdriver.Chrome() #start chrome 這行就是說我開啟的瀏覽器用"driver"代表它
-except:
-    print('\n>> 開啟webdriver失敗  請將chromedriver.exe放置與此程式同資料夾位置, 或者版本過舊需要更新')
-    end_program() #這邊先不要管
+if __name__ == "__main__":
+    start_program()
+    options = webdriver.ChromeOptions() #background execute webdriver
+    options.add_argument('--headless')
+    try:
+        driver = webdriver.Chrome() #start chrome 這行就是說我開啟的瀏覽器用"driver"代表它
+    except:
+        print('\n>> 開啟webdriver失敗  請將chromedriver.exe放置與此程式同資料夾位置, 或者版本過舊需要更新')
+        end_program() #這邊先不要管
 
-user_id = input('\n\n>> 請輸入興大入口帳號(學號): ') #剛剛學的input
-print('>> 請輸入興大入口密碼: ', end='', flush=True)
-password = pw_input()
-print('')
+    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ') #剛剛學的input
+    print('>> 請輸入興大入口密碼: ', end='', flush=True)
+    password = pw_input()
+    print('')
 
-class_id = ['', '', ''] #存放課號 先建立一個空的list
-amount = 0 #說amount是0
-while (amount < 1) or (amount > 3): #while迴圈
-    amount = int(input('\n>> 請問您想選幾堂微型通識課(1~3)(註:每學期至多3堂): '))
-for i in range(0, amount):
-    tmp = '>> 請輸入第 ' + str(i+1) + ' 門通識課程課號: '
-    class_id[i] = input(tmp)
+    class_id = ['', '', ''] #存放課號 先建立一個空的list
+    amount = 0 #說amount是0
+    while (amount < 1) or (amount > 3): #while迴圈
+        amount = int(input('\n>> 請問您想選幾堂微型通識課(1~3)(註:每學期至多3堂): '))
+    for i in range(0, amount):
+        tmp = '>> 請輸入第 ' + str(i+1) + ' 門通識課程課號: '
+        class_id[i] = input(tmp)
 
-run = 1
-count = 0
-while run == 1 and count < 3:
-    print('>> ---------------------------------------- 第'+str(count+1)+'次執行 ----------------------------------------')
-    run = main(user_id, password, class_id, amount) #這邊跳到main去 傳入一些 密碼 帳號 想選的課的id...
-    count += 1
-if run == 1 and count == 3:
-    print('\n>> 執行失敗, 很抱歉')
-end_program()
+    run = 1
+    count = 0
+    while run == 1 and count < 3:
+        print('>> ---------------------------------------- 第'+str(count+1)+'次執行 ----------------------------------------')
+        run = main(user_id, password, class_id, amount) #這邊跳到main去 傳入一些 密碼 帳號 想選的課的id...
+        count += 1
+    if run == 1 and count == 3:
+        print('\n>> 執行失敗, 很抱歉')
+    end_program()

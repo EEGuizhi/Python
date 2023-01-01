@@ -121,11 +121,11 @@ def login(user_id, password):
     except:
         return 1
     try:
-        element = driver.find_element_by_id("heading5") #點擊登入
+        element = driver.find_element("id",value="login_btn") #點擊登入
     except:
         try:
             soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
-            element = soup.find('a', string='登入') #用文字搜尋
+            element = soup.find('button', string='登入') #用文字搜尋
             element = driver.find_element_by_xpath(xpath_soup(element))
         except:
             return 1
@@ -626,7 +626,7 @@ def main(user_id, password):
     result(failed)
     return 0
 
-#---------------------------------------------------------------------------------------------------------------MAIN
+# MAIN
 if __name__ == "__main__":
     start_program()
 

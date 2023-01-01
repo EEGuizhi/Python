@@ -90,11 +90,11 @@ def login(user_id, password):
     except:
         return 1
     try:
-        element = driver.find_element("id",value="heading5") #點擊登入
+        element = driver.find_element("id",value="login_btn") #點擊登入
     except:
         try:
             soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
-            element = soup.find('a', string='登入') #用文字搜尋
+            element = soup.find('button', string='登入') #用文字搜尋
             element = driver.find_element("xpath",value=xpath_soup(element))
         except:
             return 1
