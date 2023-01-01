@@ -69,6 +69,13 @@ def login(user_id, password): #在興大入口網頁進行登入動作
     except:
         return 1
     try:
+        verify_code = "console.log(code);"
+        verify_code = driver.execute_script(verify_code)
+        element = driver.find_element("id",value="inputCode")
+        element.send_keys(verify_code)
+    except:
+        return 1
+    try:
         element = driver.find_element("id",value="heading5") #點擊登入
     except:
         try: #另一種方式(備案)

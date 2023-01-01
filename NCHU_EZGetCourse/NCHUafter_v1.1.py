@@ -83,6 +83,13 @@ def login(user_id, password):
     except:
         return 1
     try:
+        verify_code = "console.log(code);"
+        verify_code = driver.execute_script(verify_code)
+        element = driver.find_element("id",value="inputCode")
+        element.send_keys(verify_code)
+    except:
+        return 1
+    try:
         element = driver.find_element("id",value="heading5") #點擊登入
     except:
         try:
@@ -210,58 +217,58 @@ def check_til_choose_able(group, num):
             print('   time:', time.strftime(" %I:%M:%S %p", time.localtime()), end='')
 
 
-#---------------------------------------------------------------------------------------------------------------MAIN
-start_program()
+if __name__ == "__main__":
+    start_program()
 
-backgraound = None
-while backgraound!='Y' and backgraound!='N':
-    backgraound = input(">> 請問您希望「是」在背景執行，還是「不是」在背景執行此程式呢？(輸入:Y/N) (註：兩者皆不會影響到你平常使用的瀏覽器):")
+    backgraound = None
+    while backgraound!='Y' and backgraound!='N':
+        backgraound = input(">> 請問您希望「是」在背景執行，還是「不是」在背景執行此程式呢？(輸入:Y/N) (註：兩者皆不會影響到你平常使用的瀏覽器):")
 
-options = webdriver.ChromeOptions()
-if backgraound == 'Y':
-    options.add_argument('--headless') #此行會背景執行webdriver
-try:
-    driver = webdriver.Chrome(chrome_options=options) #啟動chrome webdriver
-except:
-    print('\n>> 開啟webdriver失敗, 請先安裝或更新Chrome Webdriver並與此程式放置在同個資料夾')
+    options = webdriver.ChromeOptions()
+    if backgraound == 'Y':
+        options.add_argument('--headless') #此行會背景執行webdriver
+    try:
+        driver = webdriver.Chrome(chrome_options=options) #啟動chrome webdriver
+    except:
+        print('\n>> 開啟webdriver失敗, 請先安裝或更新Chrome Webdriver並與此程式放置在同個資料夾')
+        end_program()
+
+    time.sleep(3)
+    print(">> 請忽略一些看不懂的不重要訊息")
+    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ') #使用者輸入帳號、密碼
+    print('>> 請輸入興大入口密碼: ', end='', flush=True)
+    password = pw_input()
+    print('')
+
+    num = input('>> 請輸入通識課程課號: ') #課號
+    group = 0
+    while group < 1 or group > 4:
+        group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 ?(輸入1~4):')) #領域
+
+
+    failed = connect_nchu() #連到興大入口
+    if failed:
+        end_program()
+    login(user_id, password) #登入興大入口 (執行失敗基本上就是已登入)
+    try:
+        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
+        # link = driver.find_element_by_link_text("選課") #找到選課網址
+    except:
+        print('\n>> ERROR：登入錯誤或無法連線至"選課"頁面')
+        end_program()
+    try:
+        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=crseqry_home')
+        # link = driver.find_element_by_link_text("課程查詢") #找到選課網址
+        # driver.get(link.get_attribute('href')) #連到選課網址
+    except:
+        print('\n>> ERROR：無法連線至"課程查詢"頁面')
+        end_program()
+
+
+    failed = check_til_choose_able(group, num)
+    if failed:
+        end_program()
+    failed = main_class(num)
+    result(failed)
+
     end_program()
-
-time.sleep(3)
-print(">> 請忽略一些看不懂的不重要訊息")
-user_id = input('\n\n>> 請輸入興大入口帳號(學號): ') #使用者輸入帳號、密碼
-print('>> 請輸入興大入口密碼: ', end='', flush=True)
-password = pw_input()
-print('')
-
-num = input('>> 請輸入通識課程課號: ') #課號
-group = 0
-while group < 1 or group > 4:
-    group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 ?(輸入1~4):')) #領域
-
-
-failed = connect_nchu() #連到興大入口
-if failed:
-    end_program()
-login(user_id, password) #登入興大入口 (執行失敗基本上就是已登入)
-try:
-    driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
-    # link = driver.find_element_by_link_text("選課") #找到選課網址
-except:
-    print('\n>> ERROR：登入錯誤或無法連線至"選課"頁面')
-    end_program()
-try:
-    driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=crseqry_home')
-    # link = driver.find_element_by_link_text("課程查詢") #找到選課網址
-    # driver.get(link.get_attribute('href')) #連到選課網址
-except:
-    print('\n>> ERROR：無法連線至"課程查詢"頁面')
-    end_program()
-
-
-failed = check_til_choose_able(group, num)
-if failed:
-    end_program()
-failed = main_class(num)
-result(failed)
-
-end_program()
