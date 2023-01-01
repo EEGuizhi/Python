@@ -5,6 +5,7 @@ import itertools
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import msvcrt
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 def start_program():
     print('\n=========================================================================')
@@ -32,9 +33,9 @@ def pw_input():
     chars = []
     while True:
         newChar = msvcrt.getch().decode(encoding="utf-8")
-        if newChar in '\r\n': # 如果是換行，則輸入結束
+        if newChar in '\r\n':  # 如果是換行，則輸入結束
             break
-        elif newChar == '\b': # 如果是退格，則刪除密碼末尾一位並且刪除一個星號
+        elif newChar == '\b':  # 如果是退格，則刪除密碼末尾一位並且刪除一個星號
             if chars:
                 del chars[-1]
                 print('\b', end='', flush=True)
@@ -45,7 +46,7 @@ def pw_input():
             chars.append(newChar)
     return (''.join(chars))
 
-def xpath_soup(element): #code from https://stackoverflow.com/questions/37979644/parse-beautifulsoup-element-into-selenium
+def xpath_soup(element):  # code from https://stackoverflow.com/questions/37979644/parse-beautifulsoup-element-into-selenium
     components = []
     child = element if element.name else element.parent
     for parent in child.parents:
@@ -59,10 +60,10 @@ def xpath_soup(element): #code from https://stackoverflow.com/questions/37979644
 
 def connect_nchu():
     print('\n>> 正在連線興大入口..')
-    count = 0 #連線興大入口
+    count = 0  # 連線興大入口
     while count < 3:
         try:
-            driver.get("https://portal.nchu.edu.tw/portal/") #進入興大入口網頁
+            driver.get("https://portal.nchu.edu.tw/portal/")  # 進入興大入口網頁
         except:
             print('>> 連線興大入口失敗...')
             time.sleep(3)
@@ -76,25 +77,27 @@ def connect_nchu():
 def login(user_id, password):
     print('\n>> 輸入帳號密碼並登入', time.strftime(" %I:%M:%S %p", time.localtime()))
     try:
-        element = driver.find_element("name",value="Ecom_User_ID") #帳號輸入
+        element = driver.find_element("name",value="Ecom_User_ID")  # 帳號輸入
         element.send_keys(user_id)
-        element = driver.find_element("name",value="Ecom_Password") #密碼輸入
+        element = driver.find_element("name",value="Ecom_Password")  # 密碼輸入
         element.send_keys(password)
     except:
         return 1
     try:
-        verify_code = "console.log(code);"
-        verify_code = driver.execute_script(verify_code)
+        driver.execute_script("console.log(code);")
+        for entry in driver.get_log('browser'):
+            if entry['level'] == "INFO":  # ex: {'level': 'INFO', 'message': 'console-api 2:32 "6LYE"'}
+                verify_code = entry['message'][-5:-1]
         element = driver.find_element("id",value="inputCode")
         element.send_keys(verify_code)
     except:
         return 1
     try:
-        element = driver.find_element("id",value="login_btn") #點擊登入
+        element = driver.find_element("id",value="login_btn")  # 點擊登入
     except:
         try:
-            soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
-            element = soup.find('button', string='登入') #用文字搜尋
+            soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
+            element = soup.find('button', string='登入')  # 用文字搜尋
             element = driver.find_element("xpath",value=xpath_soup(element))
         except:
             return 1
@@ -106,21 +109,21 @@ def main_class(num):
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
     except:
         try:
-            driver.get("https://portal.nchu.edu.tw/portal/") #進入興大入口網頁
+            driver.get("https://portal.nchu.edu.tw/portal/")  # 進入興大入口網頁
             driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
-            # link = driver.find_element_by_link_text("選課") #找到選課網址
-            # driver.get(link.get_attribute('href')) #連到選課網址
+            # link = driver.find_element_by_link_text("選課")  # 找到選課網址
+            # driver.get(link.get_attribute('href'))  # 連到選課網址
         except:
             print('\n>> 登入錯誤或無法連線至選課頁面')
     try:
-        print('\n>> 連到直接輸入課號加選畫面') #跳到直接輸入課號加選畫面
+        print('\n>> 連到直接輸入課號加選畫面')  # 跳到直接輸入課號加選畫面
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/enro_direct1_list')
     except:
         print('\n>> 連到直接輸入課號加選畫面錯誤...')
         return 1
     try:
         print('\n>> 輸入課號')
-        soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
         option = soup.find('input', type="text")
         element = driver.find_element("xpath",value=xpath_soup(option))
         element.send_keys(num)
@@ -137,7 +140,7 @@ def main_class(num):
         return 1
     try:
         print('\n>> 將課程打勾')
-        soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
         checkbox = soup.find('input', type="checkbox")
         element = driver.find_element("xpath",value=xpath_soup(checkbox))
         element.click()
@@ -146,7 +149,7 @@ def main_class(num):
         return 1
     try:
         print('\n>> 按下"是，確定加選"')
-        soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
         button = soup.find('input', value="是，確定加選")
         element = driver.find_element("xpath",value=xpath_soup(button))
         element.click()
@@ -154,7 +157,7 @@ def main_class(num):
         print('\n>> 按下"是，確定加選"錯誤...')
         return 1
     print('\n>> 選課完畢 取得最後結果..')
-    soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
+    soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
     print('\n\n>> 選課結果:')
     try:
         text = soup.find('td', string=num).find_parent().select('td')
@@ -169,13 +172,13 @@ def main_class(num):
 
 def check_til_choose_able(group, num):
     try:
-        print('\n>> 連到通識選課查詢畫面') #跳到通識查詢畫面
+        print('\n>> 連到通識選課查詢畫面')  # 跳到通識查詢畫面
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/crseqry_gene_now')
     except:
         print('>> 連到通識選課查詢畫面 錯誤...')
         return 1
     try:
-        soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
         if group == 1:
             option = soup.find('option', string='人文領域')
         elif group == 2:
@@ -193,7 +196,7 @@ def check_til_choose_able(group, num):
         print('>> 選擇通識領域 錯誤...')
         return 1
     try:
-        soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
         tmp = soup.find('a', string=num).find_parent().find_parent().select('td')
         print('\n>> 課程名稱:', tmp[5].getText())
     except:
@@ -204,7 +207,7 @@ def check_til_choose_able(group, num):
         while True:
             time.sleep(1)  # 每隔1秒刷新一次頁面
             driver.refresh()
-            soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
+            soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
             try:
                 tmp = soup.find('a', string=num).find_parent().find_parent().select('td')
                 print('\r>> 開課人數:', tmp[12].getText(), '  目前人數:', tmp[13].getText(), end='')
@@ -224,42 +227,46 @@ if __name__ == "__main__":
     while backgraound!='Y' and backgraound!='N':
         backgraound = input(">> 請問您希望「是」在背景執行，還是「不是」在背景執行此程式呢？(輸入:Y/N) (註：兩者皆不會影響到你平常使用的瀏覽器):")
 
+    # enable browser logging
+    d = DesiredCapabilities.CHROME
+    d['goog:loggingPrefs'] = { 'browser':'ALL' }
+
     options = webdriver.ChromeOptions()
     if backgraound == 'Y':
-        options.add_argument('--headless') #此行會背景執行webdriver
+        options.add_argument('--headless')  # 此行會背景執行webdriver
     try:
-        driver = webdriver.Chrome(chrome_options=options) #啟動chrome webdriver
+        driver = webdriver.Chrome(chrome_options=options, desired_capabilities=d)  # 啟動chrome webdriver
     except:
         print('\n>> 開啟webdriver失敗, 請先安裝或更新Chrome Webdriver並與此程式放置在同個資料夾')
         end_program()
 
     time.sleep(3)
     print(">> 請忽略一些看不懂的不重要訊息")
-    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ') #使用者輸入帳號、密碼
+    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ')  # 使用者輸入帳號、密碼
     print('>> 請輸入興大入口密碼: ', end='', flush=True)
     password = pw_input()
     print('')
 
-    num = input('>> 請輸入通識課程課號: ') #課號
+    num = input('>> 請輸入通識課程課號: ')  # 課號
     group = 0
     while group < 1 or group > 4:
         group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 ?(輸入1~4):')) #領域
 
 
-    failed = connect_nchu() #連到興大入口
+    failed = connect_nchu()  # 連到興大入口
     if failed:
         end_program()
-    login(user_id, password) #登入興大入口 (執行失敗基本上就是已登入)
+    login(user_id, password)  # 登入興大入口 (執行失敗基本上就是已登入)
     try:
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
-        # link = driver.find_element_by_link_text("選課") #找到選課網址
+        # link = driver.find_element_by_link_text("選課")  # 找到選課網址
     except:
         print('\n>> ERROR：登入錯誤或無法連線至"選課"頁面')
         end_program()
     try:
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=crseqry_home')
-        # link = driver.find_element_by_link_text("課程查詢") #找到選課網址
-        # driver.get(link.get_attribute('href')) #連到選課網址
+        # link = driver.find_element_by_link_text("課程查詢")  # 找到選課網址
+        # driver.get(link.get_attribute('href'))  # 連到選課網址
     except:
         print('\n>> ERROR：無法連線至"課程查詢"頁面')
         end_program()

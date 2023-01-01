@@ -5,6 +5,7 @@ import itertools
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import msvcrt
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 def start_program(): #開始的輸出
     print('#by EEGuizhi')
@@ -69,8 +70,10 @@ def login(user_id, password): #在興大入口網頁進行登入動作
     except:
         return 1
     try:
-        verify_code = "console.log(code);"
-        verify_code = driver.execute_script(verify_code)
+        driver.execute_script("console.log(code);")
+        for entry in driver.get_log('browser'):
+            if entry['level'] == "INFO":  # ex: {'level': 'INFO', 'message': 'console-api 2:32 "6LYE"'}
+                verify_code = entry['message'][-5:-1]
         element = driver.find_element("id",value="inputCode")
         element.send_keys(verify_code)
     except:
@@ -216,22 +219,27 @@ def main(user_id, password, class_id, amount): #微型通識主要部分
 
 if __name__ == "__main__":
     start_program()
-    options = webdriver.ChromeOptions() #background execute webdriver
+    
+    # enable browser logging
+    d = DesiredCapabilities.CHROME
+    d['goog:loggingPrefs'] = { 'browser':'ALL' }
+    
+    options = webdriver.ChromeOptions()  # background execute webdriver
     options.add_argument('--headless')
     try:
-        driver = webdriver.Chrome() #start chrome 這行就是說我開啟的瀏覽器用"driver"代表它
+        driver = webdriver.Chrome(desired_capabilities=d)  # start chrome
     except:
         print('\n>> 開啟webdriver失敗  請將chromedriver.exe放置與此程式同資料夾位置, 或者版本過舊需要更新')
-        end_program() #這邊先不要管
+        end_program()
 
-    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ') #剛剛學的input
+    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ')
     print('>> 請輸入興大入口密碼: ', end='', flush=True)
     password = pw_input()
     print('')
 
-    class_id = ['', '', ''] #存放課號 先建立一個空的list
-    amount = 0 #說amount是0
-    while (amount < 1) or (amount > 3): #while迴圈
+    class_id = ['', '', '']
+    amount = 0
+    while (amount < 1) or (amount > 3):
         amount = int(input('\n>> 請問您想選幾堂微型通識課(1~3)(註:每學期至多3堂): '))
     for i in range(0, amount):
         tmp = '>> 請輸入第 ' + str(i+1) + ' 門通識課程課號: '
@@ -241,7 +249,7 @@ if __name__ == "__main__":
     count = 0
     while run == 1 and count < 3:
         print('>> ---------------------------------------- 第'+str(count+1)+'次執行 ----------------------------------------')
-        run = main(user_id, password, class_id, amount) #這邊跳到main去 傳入一些 密碼 帳號 想選的課的id...
+        run = main(user_id, password, class_id, amount)
         count += 1
     if run == 1 and count == 3:
         print('\n>> 執行失敗, 很抱歉')

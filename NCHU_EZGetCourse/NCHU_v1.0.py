@@ -1,4 +1,4 @@
-#by EEGuizhi
+#by EEGuizhi (未修正驗證碼部分)
 
 import time
 import itertools
