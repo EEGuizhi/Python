@@ -23,10 +23,10 @@ def end_program():
         exit()
 
 def result(failed):
-    if failed == 0:
-        print('\n>> END: 感謝使用, 如搶課未成功請見諒')
-    if failed == 1:
+    if failed:
         print('\n>> END: 很抱歉這什麼破程式, 請將問題回報作者')
+    else:
+        print('\n>> END: 感謝使用, 如搶課未成功請見諒')
 
 def sendback(soup, str, checkbox):
     try:

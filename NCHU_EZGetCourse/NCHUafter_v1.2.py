@@ -7,27 +7,6 @@ from selenium import webdriver
 import msvcrt
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-def start_program():
-    print('\n=========================================================================')
-    print('# by EEGuizhi  請不要將此code提供給其他人^^')
-    print('>> Program has started ',time.strftime(" %I:%M:%S %p", time.localtime()))
-    print('\n註: 此程式每間隔1秒會刷新一次頁面，重複確認您想選的課程是否有名額可選，並在可選時自動加選，')
-    print('    請注意，如果您是使用沒設置過的vscode執行此程式碼，是會有執行次數的上限的，講白一點就是無法掛整天。\n\n')
-
-def end_program():
-    print('\n>> Program has ended ',time.strftime(" %I:%M:%S %p", time.localtime()))
-    print('=========================================================================')
-    try:
-        driver.quit()
-    finally:
-        input()
-        exit()
-
-def result(failed):
-    if failed == 0:
-        print('\n>> END: 感謝使用, 如搶課未成功請見諒')
-    if failed == 1:
-        print('\n>> END: 好吧這什麼破程式==，請將出錯的問題回報給作者')
 
 def pw_input():
     chars = []
@@ -46,6 +25,26 @@ def pw_input():
             chars.append(newChar)
     return (''.join(chars))
 
+
+def start_program():
+    print('=========================================================================')
+    print('# by EEGuizhi')
+    print('>> Program has started ',time.strftime(" %I:%M:%S %p", time.localtime()))
+    print('\n註: 此程式每間隔1秒會刷新一次頁面，重複確認您想選的課程是否有名額可選，並在可選時自動加選。\n\n')
+
+
+def end_program(msg: str):
+    if msg:
+        print("\n>>", msg)
+    print('\n>> Program has ended ',time.strftime(" %I:%M:%S %p", time.localtime()))
+    print('=========================================================================')
+    try:
+        driver.quit()
+    finally:
+        input()
+        exit()
+
+
 def xpath_soup(element):  # code from https://stackoverflow.com/questions/37979644/parse-beautifulsoup-element-into-selenium
     components = []
     child = element if element.name else element.parent
@@ -58,23 +57,29 @@ def xpath_soup(element):  # code from https://stackoverflow.com/questions/379796
     components.reverse()
     return '/%s' % '/'.join(components)
 
+
 def connect_nchu():
     print('\n>> 正在連線興大入口..')
-    count = 0  # 連線興大入口
+    count = 0  # 計次
     while count < 3:
         try:
             driver.get("https://portal.nchu.edu.tw/portal/")  # 進入興大入口網頁
         except:
             print('>> 連線興大入口失敗...')
             time.sleep(3)
-            count = count+1
+            count = count + 1
         else:
             break
     if count >= 3:
         return 1
     return 0
 
+
 def login(user_id, password):
+    # 連到興大入口
+    if connect_nchu():
+        end_program("無法連至興大入口")
+    # 輸入帳密
     print('\n>> 輸入帳號密碼並登入', time.strftime(" %I:%M:%S %p", time.localtime()))
     try:
         element = driver.find_element("name",value="Ecom_User_ID")  # 帳號輸入
@@ -83,6 +88,7 @@ def login(user_id, password):
         element.send_keys(password)
     except:
         return 1
+    # 驗證碼
     try:
         driver.execute_script("console.log(code);")
         for entry in driver.get_log('browser'):
@@ -92,6 +98,7 @@ def login(user_id, password):
         element.send_keys(verify_code)
     except:
         return 1
+    # 點擊登入
     try:
         element = driver.find_element("id",value="login_btn")  # 點擊登入
     except:
@@ -103,6 +110,7 @@ def login(user_id, password):
             return 1
     element.click()
     return 0
+
 
 def main_class(num):
     try:
@@ -119,8 +127,7 @@ def main_class(num):
         print('\n>> 連到直接輸入課號加選畫面')  # 跳到直接輸入課號加選畫面
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/enro_direct1_list')
     except:
-        print('\n>> 連到直接輸入課號加選畫面錯誤...')
-        return 1
+        end_program('連到直接輸入課號加選畫面錯誤...')
     try:
         print('\n>> 輸入課號')
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
@@ -128,16 +135,14 @@ def main_class(num):
         element = driver.find_element("xpath",value=xpath_soup(option))
         element.send_keys(num)
     except:
-        print('\n>> 輸入課號錯誤...')
-        return 1
+        end_program('輸入課號錯誤...')
     try:
         print('\n>> 按下 確定送出')
         button = soup.find('input', value="確定送出")
         element = driver.find_element("xpath",value=xpath_soup(button))
         element.click()
     except:
-        print('\n>> 按下確定送出 錯誤...')
-        return 1
+        end_program('按下確定送出 錯誤...')
     try:
         print('\n>> 將課程打勾')
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
@@ -145,8 +150,7 @@ def main_class(num):
         element = driver.find_element("xpath",value=xpath_soup(checkbox))
         element.click()
     except:
-        print('\n>> 打勾課程錯誤...')
-        return 1
+        end_program('打勾課程錯誤...')
     try:
         print('\n>> 按下"是，確定加選"')
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
@@ -154,8 +158,7 @@ def main_class(num):
         element = driver.find_element("xpath",value=xpath_soup(button))
         element.click()
     except:
-        print('\n>> 按下"是，確定加選"錯誤...')
-        return 1
+        end_program('按下「是，確定加選」錯誤...')
     print('\n>> 選課完畢 取得最後結果..')
     soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
     print('\n\n>> 選課結果:')
@@ -170,13 +173,13 @@ def main_class(num):
         print('>> 很抱歉，加選錯誤或失敗。')
     return 0
 
+
 def check_til_choose_able(group, num):
     try:
         print('\n>> 連到通識選課查詢畫面')  # 跳到通識查詢畫面
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/crseqry_gene_now')
     except:
-        print('>> 連到通識選課查詢畫面 錯誤...')
-        return 1
+        end_program('ERROR：連到通識選課查詢畫面錯誤...')
     try:
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
         if group == 1:
@@ -193,15 +196,13 @@ def check_til_choose_able(group, num):
         element = driver.find_element("xpath",value=xpath_soup(button))
         element.click()
     except:
-        print('>> 選擇通識領域 錯誤...')
-        return 1
+        end_program('ERROR：選擇通識領域錯誤...')
     try:
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
         tmp = soup.find('a', string=num).find_parent().find_parent().select('td')
         print('\n>> 課程名稱:', tmp[5].getText())
     except:
-        print('>> 找尋課程錯誤')
-        return 1
+        end_program('ERROR：找尋課程錯誤...')
     
     for i in range(25):  # 避免while Loop達到保護的上限而自動停止
         while True:
@@ -229,7 +230,7 @@ if __name__ == "__main__":
 
     # enable browser logging
     d = DesiredCapabilities.CHROME
-    d['goog:loggingPrefs'] = { 'browser':'ALL' }
+    d['goog:loggingPrefs'] = {'browser':'ALL'}
 
     options = webdriver.ChromeOptions()
     if backgraound == 'Y':
@@ -238,44 +239,36 @@ if __name__ == "__main__":
         driver = webdriver.Chrome(chrome_options=options, desired_capabilities=d)  # 啟動chrome webdriver
     except:
         print('\n>> 開啟webdriver失敗, 請先安裝或更新Chrome Webdriver並與此程式放置在同個資料夾')
-        end_program()
-
+        end_program('')
     time.sleep(3)
-    print(">> 請忽略一些看不懂的不重要訊息")
-    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ')  # 使用者輸入帳號、密碼
+    print("\n")
+
+    # 使用者輸入帳號、密碼
+    user_id = input('\n\n>> 請輸入興大入口帳號(學號): ')
     print('>> 請輸入興大入口密碼: ', end='', flush=True)
     password = pw_input()
     print('')
 
-    num = input('>> 請輸入通識課程課號: ')  # 課號
+    # 課號
+    num = input('>> 請輸入通識課程課號: ')
     group = 0
     while group < 1 or group > 4:
-        group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 ?(輸入1~4):')) #領域
+        group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 ?(輸入1~4):'))
 
 
-    failed = connect_nchu()  # 連到興大入口
-    if failed:
-        end_program()
+    # 登入
     login(user_id, password)  # 登入興大入口 (執行失敗基本上就是已登入)
     try:
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
-        # link = driver.find_element_by_link_text("選課")  # 找到選課網址
     except:
-        print('\n>> ERROR：登入錯誤或無法連線至"選課"頁面')
-        end_program()
+        end_program('ERROR：登入錯誤或無法連線至"選課"頁面')
     try:
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=crseqry_home')
-        # link = driver.find_element_by_link_text("課程查詢")  # 找到選課網址
-        # driver.get(link.get_attribute('href'))  # 連到選課網址
     except:
-        print('\n>> ERROR：無法連線至"課程查詢"頁面')
-        end_program()
+        end_program('ERROR：無法連線至"課程查詢"頁面')
 
 
-    failed = check_til_choose_able(group, num)
-    if failed:
-        end_program()
-    failed = main_class(num)
-    result(failed)
+    check_til_choose_able(group, num)
+    main_class(num)
 
-    end_program()
+    end_program('')
