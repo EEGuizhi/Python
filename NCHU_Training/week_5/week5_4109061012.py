@@ -25,7 +25,7 @@ if __name__ == "__main__":
     para_A = torch.randn((), requires_grad=True, device=DEVICE, dtype=torch.float)
     para_B = torch.randn((), requires_grad=True, device=DEVICE, dtype=torch.float)
     para_C = torch.randn((), requires_grad=True, device=DEVICE, dtype=torch.float)
-    
+
     for i in range(101):
         MSEloss = (0.5 * (para_A * x**2 + para_B * x + para_C - target_y)**2).sum()
 
@@ -65,6 +65,6 @@ if __name__ == "__main__":
             plt.plot(x.cpu(), target_y.cpu(), color="red", label=target_label)
             plt.plot(x.cpu().detach().numpy(), pred_y.cpu().detach().numpy(), label=Pred_label)
             plt.legend(loc="upper left")
-    
+
     # Show
     plt.show()

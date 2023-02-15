@@ -71,7 +71,7 @@ if __name__ == "__main__":
     )
     train_dataloader = DataLoader(training_data, batch_size=BATCH, shuffle=True)
     test_dataloader = DataLoader(test_data, batch_size=BATCH, shuffle=True)
-    
+
     # Device
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f">> Using {device} device")
@@ -80,9 +80,9 @@ if __name__ == "__main__":
     # Training
     model.train()
     optimization = torch.optim.Adam(model.parameters(), lr = LR)
-    loss_func = nn.CrossEntropyLoss()
-    
-    
+    loss_func = nn.CrossEntropyLoss()  # ML lecture 5  13:27
+
+
     print(">> Training...")
     Loss = []
     Mean_Loss = []
