@@ -7,7 +7,6 @@ from selenium import webdriver
 import msvcrt
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-
 def pw_input():
     chars = []
     while True:
@@ -111,6 +110,85 @@ def login(user_id, password):
     element.click()
     return 0
 
+def final_step(num):
+    try:
+        print('\n>> 連到直接輸入課號加選畫面')  # 跳到直接輸入課號加選畫面
+        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/enro_direct1_list')
+    except:
+        print('\n>>連到直接輸入課號加選畫面錯誤...')
+        return 1
+    try:
+        print('\n>> 輸入課號')
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
+        option = soup.find('input', type="text")
+        element = driver.find_element("xpath",value=xpath_soup(option))
+        element.send_keys(num)
+    except:
+        print('\n>>輸入課號錯誤...')
+        try:
+            element = driver.find_element("name",value="Ecom_User_ID")  # 帳號輸入
+            element.send_keys(user_id)
+            element = driver.find_element("name",value="Ecom_Password")  # 密碼輸入
+            element.send_keys(password)
+        except:
+            return 1
+        # 驗證碼
+        try:
+            driver.execute_script("console.log(code);")
+            for entry in driver.get_log('browser'):
+                if entry['level'] == "INFO":  # ex: {'level': 'INFO', 'message': 'console-api 2:32 "6LYE"'}
+                    verify_code = entry['message'][-5:-1]
+            element = driver.find_element("id",value="inputCode")
+            element.send_keys(verify_code)
+        except:
+            return 1
+        # 點擊登入
+        try:
+            element = driver.find_element("id",value="login_btn")  # 點擊登入
+        except:
+            try:
+                soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
+                element = soup.find('button', string='登入')  # 用文字搜尋
+                element = driver.find_element("xpath",value=xpath_soup(element))
+            except:
+                return 1
+        element.click()
+        try:
+            print('\n>> 輸入課號')
+            soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
+            option = soup.find('input', type="text")
+            element = driver.find_element("xpath",value=xpath_soup(option))
+            element.send_keys(num)
+        except:
+            print('\n>>輸入課號錯誤...')
+            return 1
+    try:
+        print('\n>> 按下 確定送出')
+        button = soup.find('input', value="確定送出")
+        element = driver.find_element("xpath",value=xpath_soup(button))
+        element.click()
+    except:
+        print('\n>>按下確定送出 錯誤...')
+        return 1
+    try:
+        print('\n>> 將課程打勾')
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
+        checkbox = soup.find('input', type="checkbox")
+        element = driver.find_element("xpath",value=xpath_soup(checkbox))
+        element.click()
+    except:
+        print('\n>>打勾課程錯誤...')
+        return 1
+    try:
+        print('\n>> 按下"是，確定加選"')
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
+        button = soup.find('input', value="是，確定加選")
+        element = driver.find_element("xpath",value=xpath_soup(button))
+        element.click()
+    except:
+        print('\n>>按下「是，確定加選」錯誤...')
+        return 1
+    return 0
 
 def main_class(num):
     try:
@@ -123,42 +201,13 @@ def main_class(num):
             # driver.get(link.get_attribute('href'))  # 連到選課網址
         except:
             print('\n>> 登入錯誤或無法連線至選課頁面')
-    try:
-        print('\n>> 連到直接輸入課號加選畫面')  # 跳到直接輸入課號加選畫面
-        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/enro_direct1_list')
-    except:
-        end_program('連到直接輸入課號加選畫面錯誤...')
-    try:
-        print('\n>> 輸入課號')
-        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
-        option = soup.find('input', type="text")
-        element = driver.find_element("xpath",value=xpath_soup(option))
-        element.send_keys(num)
-    except:
-        end_program('輸入課號錯誤...')
-    try:
-        print('\n>> 按下 確定送出')
-        button = soup.find('input', value="確定送出")
-        element = driver.find_element("xpath",value=xpath_soup(button))
-        element.click()
-    except:
-        end_program('按下確定送出 錯誤...')
-    try:
-        print('\n>> 將課程打勾')
-        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
-        checkbox = soup.find('input', type="checkbox")
-        element = driver.find_element("xpath",value=xpath_soup(checkbox))
-        element.click()
-    except:
-        end_program('打勾課程錯誤...')
-    try:
-        print('\n>> 按下"是，確定加選"')
-        soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
-        button = soup.find('input', value="是，確定加選")
-        element = driver.find_element("xpath",value=xpath_soup(button))
-        element.click()
-    except:
-        end_program('按下「是，確定加選」錯誤...')
+
+    failed = final_step(num)
+    if(failed):
+        failed_2 = final_step(num)
+        if(failed_2):
+            end_program('很遺憾 程式出錯..')
+
     print('\n>> 選課完畢 取得最後結果..')
     soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
     print('\n\n>> 選課結果:')
