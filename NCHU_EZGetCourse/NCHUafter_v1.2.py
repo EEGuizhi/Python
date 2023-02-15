@@ -125,43 +125,7 @@ def final_step(num):
         element.send_keys(num)
     except:
         print('\n>>輸入課號錯誤...')
-        try:
-            element = driver.find_element("name",value="Ecom_User_ID")  # 帳號輸入
-            element.send_keys(user_id)
-            element = driver.find_element("name",value="Ecom_Password")  # 密碼輸入
-            element.send_keys(password)
-        except:
-            return 1
-        # 驗證碼
-        try:
-            driver.execute_script("console.log(code);")
-            for entry in driver.get_log('browser'):
-                if entry['level'] == "INFO":  # ex: {'level': 'INFO', 'message': 'console-api 2:32 "6LYE"'}
-                    verify_code = entry['message'][-5:-1]
-            element = driver.find_element("id",value="inputCode")
-            element.send_keys(verify_code)
-        except:
-            return 1
-        # 點擊登入
-        try:
-            element = driver.find_element("id",value="login_btn")  # 點擊登入
-        except:
-            try:
-                soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
-                element = soup.find('button', string='登入')  # 用文字搜尋
-                element = driver.find_element("xpath",value=xpath_soup(element))
-            except:
-                return 1
-        element.click()
-        try:
-            print('\n>> 輸入課號')
-            soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
-            option = soup.find('input', type="text")
-            element = driver.find_element("xpath",value=xpath_soup(option))
-            element.send_keys(num)
-        except:
-            print('\n>>輸入課號錯誤...')
-            return 1
+        return 1
     try:
         print('\n>> 按下 確定送出')
         button = soup.find('input', value="確定送出")
@@ -190,7 +154,7 @@ def final_step(num):
         return 1
     return 0
 
-def main_class(num):
+def main_class(num, user_id, password):
     try:
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
     except:
@@ -202,11 +166,43 @@ def main_class(num):
         except:
             print('\n>> 登入錯誤或無法連線至選課頁面')
 
+    test = True
+    try:
+        element = driver.find_element("name",value="Ecom_User_ID")  # 帳號輸入
+        element.send_keys(user_id)
+        element = driver.find_element("name",value="Ecom_Password")  # 密碼輸入
+        element.send_keys(password)
+    except:
+        test = False
+    
+    if test:
+        # 驗證碼
+        try:
+            driver.execute_script("console.log(code);")
+            for entry in driver.get_log('browser'):
+                if entry['level'] == "INFO":  # ex: {'level': 'INFO', 'message': 'console-api 2:32 "6LYE"'}
+                    verify_code = entry['message'][-5:-1]
+            element = driver.find_element("id",value="inputCode")
+            element.send_keys(verify_code)
+        except:
+            return 1
+        # 點擊登入
+        try:
+            element = driver.find_element("id",value="login_btn")  # 點擊登入
+        except:
+            try:
+                soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
+                element = soup.find('button', string='登入')  # 用文字搜尋
+                element = driver.find_element("xpath",value=xpath_soup(element))
+            except:
+                return 1
+        element.click()
+        
     failed = final_step(num)
-    if(failed):
+    if failed:
         failed_2 = final_step(num)
-        if(failed_2):
-            end_program('很遺憾 程式出錯..')
+        if failed_2:
+            end_program('很遺憾 程式出錯')
 
     print('\n>> 選課完畢 取得最後結果..')
     soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
@@ -220,7 +216,7 @@ def main_class(num):
         print('      選課結果說明: ', text[7].getText())
     except:
         print('>> 很抱歉，加選錯誤或失敗。')
-    return 0
+    end_program('')
 
 
 def check_til_choose_able(group, num):
@@ -300,6 +296,7 @@ if __name__ == "__main__":
 
     # 課號
     num = input('>> 請輸入通識課程課號: ')
+    print('>> 輸入課號為"' + num + '"\n')
     group = 0
     while group < 1 or group > 4:
         group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 ?(輸入1~4):'))
@@ -318,6 +315,5 @@ if __name__ == "__main__":
 
 
     check_til_choose_able(group, num)
-    main_class(num)
-
-    end_program('')
+    main_class(num, user_id, password)
+    end_program('很遺憾 程式出錯..')
