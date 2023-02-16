@@ -22,8 +22,7 @@ https://drive.google.com/drive/folders/1ivBWSdHe0baJt4Hd5gkhvXuSw5hwRrIw?usp=sha
 我還沒更新所以用了會失敗。<br><br>
 
 - <b>"NCHUafter"：</b><br>
-加退選週清除候補後，此程式能自測你想選的課是否有人退選，<br>
-並在有人退選後即時搶課，不想放棄的可以試試。<br><br>
+加退選週**清除候補**後，此程式能自動監視你想選的課是否有人退選，並在有人退選後即時搶課。<br><br>
 
 - <b>"微型通識"：</b><br>
 搶微型通識用的，<br>
