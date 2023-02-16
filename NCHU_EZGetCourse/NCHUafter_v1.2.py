@@ -6,6 +6,14 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import msvcrt
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import urllib.request
+
+def connect(host='http://google.com'):
+    try:
+        urllib.request.urlopen(host) #Python 3.x
+        return True
+    except:
+        return False
 
 def pw_input():
     chars = []
@@ -221,6 +229,14 @@ def main_class(num, user_id, password):
 
 def check_til_choose_able(group, num):
     try:
+        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
+    except:
+        end_program('ERROR：登入錯誤或無法連線至"選課"頁面')
+    try:
+        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=crseqry_home')
+    except:
+        end_program('ERROR：無法連線至"課程查詢"頁面')
+    try:
         print('\n>> 連到通識選課查詢畫面')  # 跳到通識查詢畫面
         driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/crseqry_gene_now')
     except:
@@ -253,8 +269,8 @@ def check_til_choose_able(group, num):
         while True:
             time.sleep(1)  # 每隔1秒刷新一次頁面
             driver.refresh()
-            soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
             try:
+                soup = BeautifulSoup(driver.page_source, 'html.parser')  # 取得當前網頁原始碼
                 tmp = soup.find('a', string=num).find_parent().find_parent().select('td')
                 print('\r>> 開課人數:', tmp[12].getText(), '  目前人數:', tmp[13].getText(), end='')
                 tmp = int(tmp[12].getText()) - int(tmp[13].getText())
@@ -262,7 +278,17 @@ def check_til_choose_able(group, num):
                     print('\n>> 發現剩餘名額！ 即刻切換至選課頁面')
                     return 0
             except:
-                return 1
+                if connect():
+                    print('\n>> 無法查詢課程名額')
+                    return 1
+                else:
+                    print('\n>> 網路斷線 等待網路恢復..')
+                    while True:
+                        time.sleep(2)
+                        if connect():
+                            login(user_id, password)
+                            error = check_til_choose_able(group, num)
+                            return error
             print('   time:', time.strftime(" %I:%M:%S %p", time.localtime()), end='')
 
 
@@ -304,16 +330,8 @@ if __name__ == "__main__":
 
     # 登入
     login(user_id, password)  # 登入興大入口 (執行失敗基本上就是已登入)
-    try:
-        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=enro_main')
-    except:
-        end_program('ERROR：登入錯誤或無法連線至"選課"頁面')
-    try:
-        driver.get('https://onepiece2-sso.nchu.edu.tw/cofsys/plsql/acad_subpasschk1?v_subname=crseqry_home')
-    except:
-        end_program('ERROR：無法連線至"課程查詢"頁面')
 
-
-    check_til_choose_able(group, num)
-    main_class(num, user_id, password)
+    error = check_til_choose_able(group, num)
+    if error == 0:
+        main_class(num, user_id, password)
     end_program('很遺憾 程式出錯..')
