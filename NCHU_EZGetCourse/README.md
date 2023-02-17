@@ -1,13 +1,12 @@
 # NCHU 搶課程式 made by Guizhi
-(最後於 2022/6/19 確認通識、一般課程、微型通識課程的搶課程式皆能正常運作。)<br>
 
 ## 簡介：
 使用方法我有做一個小簡報，<br>
-請見以下連結：<br><br>
+見以下連結：<br>
 https://drive.google.com/drive/folders/1ivBWSdHe0baJt4Hd5gkhvXuSw5hwRrIw?usp=sharing <br>
 
 其實我之前有把程式碼包裝成執行檔，<br>
-但包完後被認定有危險==。<br>
+但包完後被認定有危險==，所以改放程式碼。<br>
 
 <br><br>
 ## 注意事項：
@@ -18,12 +17,12 @@ https://drive.google.com/drive/folders/1ivBWSdHe0baJt4Hd5gkhvXuSw5hwRrIw?usp=sha
 <br><br>
 ## 程式碼說明：
 
-- <b>"NCHU"：</b><br>
+- <b>"NCHU"：</b>(最後確認於2022/6/19)<br>
 我還沒更新所以用了會失敗。<br><br>
 
-- <b>"NCHUafter"：</b><br>
+- <b>"NCHUafter"：</b>(最後確認於2023/2/17)<br>
 加退選週**清除候補**後，此程式能自動監視你想選的課是否有人退選，並在有人退選後即時搶課。<br><br>
 
-- <b>"微型通識"：</b><br>
+- <b>"微型通識"：</b>(最後確認於2022/6/19)<br>
 搶微型通識用的，<br>
 會在下個12:30時立刻執行選課，請注意待機期間不要讓電腦休眠。
