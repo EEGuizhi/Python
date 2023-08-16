@@ -227,6 +227,9 @@ def canny_edge(img, lower, upper):
             Gy = np.sum(KERNAL_V*img[y-1:y+2, x-1:x+2])
             Gt[y, x] = (Gx**2 + Gy**2)**0.5
             Ang[y, x] = Gy/Gx
+        if(1000*y//l % 10 == 0):
+            print(">> Find Gradient: {}%            \r".format(100 * y / l), end='')
+    print("")
     Ang[1:l+1, 1:w+1] = np.arctan(Ang[1:l+1, 1:w+1]) *180 /np.pi
 
     # Step3. Non-maximum suppression
@@ -256,6 +259,9 @@ def canny_edge(img, lower, upper):
                     new_img[y, x] = Gt[y, x]
                 else:
                     new_img[y, x] = 0
+        if(1000*y//l % 10 == 0):
+            print(">> Non-maximum suppression: {}%             \r".format(100 * y / l), end='')
+    print("")
     
     # Step4. Double Thresholding  &  Step5. Hysteresis
     new_img = new_img *255.0 / np.max(new_img)
@@ -273,6 +279,9 @@ def canny_edge(img, lower, upper):
                     new_img[y, x] = 255
                 else:
                     new_img[y, x] = 0
+        if(1000*y//l % 10 == 0):
+            print(">> Double Thresholding & Hysteresis: {}%               \r".format(100 * y / l), end='')
+    print("")
 
     return np.uint8(new_img[1:l+1, 1:w+1])
 
@@ -289,12 +298,12 @@ def max_pooling_2x2(img):
 
 
 if __name__ == "__main__":
-    PATH = "week_2\TEST_pic.jpg"
+    path = input(">> input image path:")
     #PATH = "week_2\img.png"
 
-    img = cv2.imread(PATH)
+    img = cv2.imread(path)
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    cv2.imshow("origin", img)
+    # cv2.imshow("origin", img)
     # cv2.imshow("gray", gray_img)
     
     # Request 1：Blurring with average filter
@@ -325,7 +334,8 @@ if __name__ == "__main__":
     # l, w = img.shape  # Size
     # if l > 1000 or w > 1000:
     #     gray_img = 
-    q5 = canny_edge(gray_img, 15, 45)
+    # q5 = canny_edge(gray_img, 15, 45)
+    q5 = canny_edge(gray_img, 70, 70)
     # cv2.imshow("Canny", q5)
     cv2.imwrite('output.png', q5, [cv2.IMWRITE_PNG_COMPRESSION, 5])
     

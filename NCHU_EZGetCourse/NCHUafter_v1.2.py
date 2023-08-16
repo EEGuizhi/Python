@@ -251,6 +251,8 @@ def check_til_choose_able(group, num):
             option = soup.find('option', string='自然領域')
         elif group == 4:
             option = soup.find('option', string='統合領域')
+        elif group == 5:
+            option = soup.find('option', string='核心素養')
         element = driver.find_element("xpath",value=xpath_soup(option))
         element.click()
         button = soup.find('input', value='開始查詢')
@@ -324,8 +326,8 @@ if __name__ == "__main__":
     num = input('>> 請輸入通識課程課號: ')
     print('>> 輸入課號為"' + num + '"\n')
     group = 0
-    while group < 1 or group > 4:
-        group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 ?(輸入1~4):'))
+    while group < 1 or group > 5:
+        group = int(input('>> 請問該課程的領域屬於 1.人文 2.社會 3.自然 4.統合 5.核心 ?(輸入1~5):'))
 
 
     # 登入
