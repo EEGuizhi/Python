@@ -165,7 +165,7 @@ def choosing():
     return option
 
 def confirm_name():
-    namelist = ['姓名：陳柏翔', '姓名：黃鈺雯', '姓名：詹皓暐', '姓名：陳昱翰', '姓名：張宸']
+    namelist = ['姓名：XXX']
     soup = BeautifulSoup(driver.page_source, 'html.parser') #取得當前網頁原始碼
     soup = soup.find('ul', id="profile")
     username = soup.find('li').getText()
