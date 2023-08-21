@@ -431,9 +431,8 @@ def main(user_id, password):
     elif option == 4:  # 外系
         depart = input("\n>> 請輸入該課程所屬的系所代號(ex:U64F):")
         num[0] = input("\n>> 請輸入想選的課程號碼:")
-    elif option == 5:
-        print(">> 尚未完成此功能")
-        return 0
+    elif option == 5:  # 其他課程
+        num[0] = input('\n>> 請輸入想選的綜合課程號碼: ')
     elif option == 6:  # 跳出main func迴圈
         return 1
 
@@ -462,6 +461,8 @@ def main(user_id, password):
         failed = main_department(amount, num)
     elif option == 4:
         failed = other_department(depart, num[0])
+    elif option == 5:
+        failed = others(num[0])
     result(failed)
 
 
