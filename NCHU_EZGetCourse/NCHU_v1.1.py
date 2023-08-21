@@ -22,7 +22,7 @@ def end_program(msg:str=None):
     try:
         driver.quit()
     finally:
-        input()
+        input("\n按下Enter結束程式..")
         exit()
 
 
@@ -420,6 +420,7 @@ def main(user_id, password):
         print("\n>> 開始執行測試")
         print(">> 成功的話下方會顯示你的名字")
         failed = test_program()
+        return failed
     elif option == 2:  # 體育
         num[0] = input('\n>> 請輸入想選的體育課程號碼: ')
     elif option == 3:  # 系內
@@ -475,13 +476,14 @@ if __name__ == "__main__":
 
     options = webdriver.ChromeOptions()  # 背景執行webdriver
     options.add_argument('--headless')
+    options.add_argument("--log-level=3")
  
     try:
         driver = webdriver.Chrome(chrome_options=options, desired_capabilities=d)  # 啟動chrome webdriver
     except:
         print('\n>> 開啟webdriver失敗, 請先安裝或更新Chrome Webdriver並與此程式放置在同個資料夾')
         end_program('')
-    time.sleep(3)
+    time.sleep(5)
     print("\n")
 
     # 使用者輸帳號、密碼
