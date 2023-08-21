@@ -205,7 +205,7 @@ def main_class(num, user_id, password):
             except:
                 return 1
         element.click()
-        
+
     failed = final_step(num)
     if failed:
         failed_2 = final_step(num)
