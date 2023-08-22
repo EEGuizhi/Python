@@ -64,11 +64,14 @@ def xpath_soup(element):  # code from https://stackoverflow.com/questions/379796
     return '/%s' % '/'.join(components)
 
 
-def click_checkbox(str, soup:BeautifulSoup):
-    checkbox = soup.find('td', string=str).find_parent()
-    checkbox = checkbox.find('input', type="checkbox")
-    element = driver.find_element("xpath", value=xpath_soup(checkbox))
-    element.click()
+def click_checkbox(class_id, soup:BeautifulSoup):
+    try:
+        checkbox = soup.find('td', string=class_id).find_parent()
+        checkbox = checkbox.find('input', type="checkbox")
+        element = driver.find_element("xpath", value=xpath_soup(checkbox))
+        element.click()
+    except:
+        print(f">> 勾選課號 {class_id} 失敗")
 
 
 def connect_nchu():
