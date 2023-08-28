@@ -142,9 +142,8 @@ def waiting(M, h, m):
             hr = 0
         min = time.strftime("%M", time.localtime())
         if meridiem == M:
-            if int(min) >= int(m):
-                if int(hr) >= int(h):
-                    break
+            if (int(hr) > int(h)) or (int(min) >= int(m) and int(hr) >= int(h)):
+                break
 
 
 def choosing():
@@ -477,7 +476,7 @@ if __name__ == "__main__":
     d = DesiredCapabilities.CHROME
     d['goog:loggingPrefs'] = {'browser':'ALL'}
 
-    options = webdriver.ChromeOptions()  # 背景執行webdriver
+    options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument("--log-level=3")
  
