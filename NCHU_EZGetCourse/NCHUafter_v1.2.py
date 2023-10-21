@@ -306,6 +306,7 @@ if __name__ == "__main__":
     d['goog:loggingPrefs'] = {'browser':'ALL'}
 
     options = webdriver.ChromeOptions()
+    options.add_argument("--log-level=3")
     if backgraound == 'Y':
         options.add_argument('--headless')  # 此行會背景執行webdriver
     try:
