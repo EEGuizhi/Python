@@ -11,7 +11,7 @@ Pouli, Tania, and Erik Reinhard. "Progressive color transfer for images of arbit
 
 # Parameters
 B_MIN = 15
-PERC = 100
+PERC = [50, 75, 100]
 WIDTH = 1
 CH_RANGE = ((0, 255), (0, 255), (0, 255))  # https://stackoverflow.com/questions/11386556/converting-an-opencv-bgr-8-bit-image-to-cie-lab
 
@@ -68,7 +68,7 @@ def resample_Hist(Hist:np.ndarray, bins:int):
     return resampHist
 
 
-def ReshapeHist(Is, It):
+def ReshapeHist(Is:str, It:str, perc:int):
     """
     Args:
         Is (str): Source Image's file path
@@ -101,7 +101,7 @@ def ReshapeHist(Is, It):
         # Compute Smax
         Smax = compute_Smax(bins, B_MIN)
 
-        for k in range(0, round((PERC/100) * Smax)):
+        for k in range(0, round((perc/100) * Smax)):
             # Compute Bk
             Bk = int(bins * pow(2, k-Smax))
             print("\n\n>> k: {}, Bk: {}".format(k, Bk))
@@ -219,5 +219,6 @@ if __name__ == "__main__":
     source_image_path = "Image_Processing/1112_Final_Project/source/source_01.jpg"
     target_image_path = "Image_Processing/1112_Final_Project/target/target_01.jpg"
 
-    out = ReshapeHist(source_image_path, target_image_path)
-    cv2.imwrite("Image_Processing/1112_Final_Project/ColorTransfer_Output.png", out)
+    for perc in PERC:
+        out = ReshapeHist(source_image_path, target_image_path, perc)
+        cv2.imwrite(f"Image_Processing/1112_Final_Project/output/ColorTransfer_perc{perc}.png", out)
