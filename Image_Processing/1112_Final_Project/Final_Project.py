@@ -12,7 +12,8 @@ Pouli, Tania, and Erik Reinhard. "Progressive color transfer for images of arbit
 # Parameters
 B_MIN = 15
 PERC = [50, 75, 100]
-WIDTH = 1
+WIDTH = 1  # V
+W_A = 1.0  # Mask
 CH_RANGE = ((0, 255), (0, 255), (0, 255))  # https://stackoverflow.com/questions/11386556/converting-an-opencv-bgr-8-bit-image-to-cie-lab
 
 
@@ -68,7 +69,7 @@ def resample_Hist(Hist:np.ndarray, bins:int):
     return resampHist
 
 
-def ReshapeHist(Is:str, It:str, perc:int):
+def ReshapeHist(Is:str, It:str, perc:int, width:int=1, Wa:float=1.0):
     """
     Args:
         Is (str): Source Image's file path
@@ -94,9 +95,15 @@ def ReshapeHist(Is:str, It:str, perc:int):
     # For each channel
     for ic in range(3):
         # Compute histograms
-        bins = CH_RANGE[ic][1] - CH_RANGE[ic][0] + 1
+        bins = round((CH_RANGE[ic][1] - CH_RANGE[ic][0] + 1) / width)
         Hs = compute_Hist(source_lab[:, :, ic], bins, ic)
         Ht = compute_Hist(target_lab[:, :, ic], bins, ic)
+
+        # Mask
+        Mask = np.zeros_like(source_lab[:, :, ic])
+        if Wa < 1 and ic != 0:
+            threshold = Wa * (CH_RANGE[ic][1] - CH_RANGE[ic][0] + 1)
+            Mask[source_lab[:, :, ic] > threshold] = 1
 
         # Compute Smax
         Smax = compute_Smax(bins, B_MIN)
@@ -142,7 +149,8 @@ def ReshapeHist(Is:str, It:str, perc:int):
             Hs,
             Ho_k,
             ic,
-            source_lab.shape[0] * source_lab.shape[1]
+            source_lab.shape[0] * source_lab.shape[1],
+            Mask
         )
 
     output_img = cv2.cvtColor(Io, cv2.COLOR_Lab2BGR)
@@ -191,7 +199,7 @@ def RegionTransfer(Hs, Ht, wt):
     return Ho
 
 
-def HistMatch(Is:np.ndarray, Hs:np.ndarray, Ho:np.ndarray, channel:int, pixel_count:int):
+def HistMatch(Is:np.ndarray, Hs:np.ndarray, Ho:np.ndarray, channel:int, pixel_count:int, Im:np.ndarray):
     # Init
     Imin, Imax = CH_RANGE[channel][0], CH_RANGE[channel][1]
     total_area = np.sum(Hs)
@@ -209,8 +217,11 @@ def HistMatch(Is:np.ndarray, Hs:np.ndarray, Ho:np.ndarray, channel:int, pixel_co
     # Below line: second & third params are "x-coord" and "y-coord corresponding to x-coord",
     # the first param is sample x-coords, which we want to get the y-coords corresponding to these x-coords.
     new_pix_value = np.interp(Hs, Ho, np.arange(Imin, Imax+1, WIDTH))
-    Io = np.reshape(new_pix_value[Is.ravel() - Imin], Is.shape)
-    input("waiting..")
+    Io = Is.ravel() - Imin  # flatten image
+    Im = Im.ravel()  # flatten mask
+    Io[Im == 0] = new_pix_value[Io[Im == 0]]
+    Io = np.reshape(Io, Is.shape)
+    input("\n>> Press Enter to continue..")
 
     return np.uint8(Io)
 
@@ -220,5 +231,5 @@ if __name__ == "__main__":
     target_image_path = "Image_Processing/1112_Final_Project/target/target_01.jpg"
 
     for perc in PERC:
-        out = ReshapeHist(source_image_path, target_image_path, perc)
+        out = ReshapeHist(source_image_path, target_image_path, perc, WIDTH, W_A)
         cv2.imwrite(f"Image_Processing/1112_Final_Project/output/ColorTransfer_perc{perc}.png", out)
