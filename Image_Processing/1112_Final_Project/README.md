@@ -1,6 +1,6 @@
-# Introduction to Digital Image Processing (Final Project)
+# Introduction to Digital Image Processing - Final Project
 
-## Final Project：
+## Paper：
 - Title：
     "<i>Progressive color transfer for images of arbitrary dynamic range</i>"
 - Ref：<br>
