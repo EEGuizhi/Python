@@ -1,13 +1,17 @@
 # Introduction to Digital Image Processing - Final Project
 
-## Paper：
+## Intro
+- Course info：NCHU 1112 Introduction to Image Processing
+- Content：Here is the python implementation (by EEGuizhi) code of the below paper, and this is the final project of the course above.
+
+## Paper
 - Title：
     "<i>Progressive color transfer for images of arbitrary dynamic range</i>"
 - Ref：<br>
     ![](image.png)
 
 
-## Color Transfer Example：
+## Color Transfer Example
 - Source： ![](source/source_01.jpg)
 - Target： ![](target/target_01.jpg)
 - Results：
@@ -16,7 +20,7 @@
     - 50% Transfer： ![](output/ColorTransfer_perc50.png)
 
 
-## Things that confuse me：
+## Things that confuse me (& how I deal with)
 - $S_{max}$ (Eq.7) of source and target images (histogram) should be the same,
 and $B_{min}$ (in Eq.7) should be same too, so bins ($B$) amount of source and target are same.
 
