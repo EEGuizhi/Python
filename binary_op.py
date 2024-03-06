@@ -14,8 +14,7 @@ class binary:
 
         Parameters :
         ---
-            `value` : the value of the variable, the type of this can be `float`, `int` for setting
-                the value in decimal format, or `np.ndarray` in binary, `str` in hexadecimal.
+            `value` : the value of the variable, type can be `binary`, `float`, `int`, `numpy.ndarray`, or `str`(hexadecimal).
             `width` : the width of the variable.
             `signed` : `True` for signed, `False` for unsigned.
             `fixed_point` : the index of 2^0 digit in binary format.
@@ -48,6 +47,7 @@ class binary:
     def bin(self) -> np.ndarray:
         return self.__bin
 
+
     def __call__(self, format = "bin") -> np.array:
         """return the value of variable in binary format (numpy array).
         
@@ -62,19 +62,48 @@ class binary:
         else:
             raise ValueError("The format must be \"bin\" (binary) or \"dec\" (decimal). ")
 
+    def __str__(self) -> str:
+        return binary_string(self.__bin)
 
-    def set_value(self, value):
+    def __round__(self, width: int) -> float:
+        """Binary round, rounding the binary number into new"""
+        return binary_round(self.__bin, width=width)
+
+    def __eq__(self, value) -> bool:
+        pass
+
+
+    @dec.setter
+    def dec(self, value: float) -> None:
+        if type(value) != float and type(value) != int: raise TypeError("Type of `value` must be `float` or `int`")
+        self.__bin = dec2bin(value, width=self.__width, fixed_point=self.__fixed_point, signed=self.__signed)
+        self.__dec = bin2dec(self.__bin, fixed_point=self.__fixed_point, signed=self.__signed)
+
+    @bin.setter
+    def bin(self, value: np.ndarray) -> None:
+        if type(value) != np.ndarray: raise TypeError("Type of `value` must be `numpy.ndarray`")
+        if value.shape[0] != self.__width: raise ValueError("The width of the binary number is not match")
+        self.__bin = value
+        self.__dec = bin2dec(self.__bin, fixed_point=self.__fixed_point, signed=self.__signed)
+
+
+    def set_value(self, value) -> None:
         """Setting value of the binary variable.
+        - the type of `value` can be `binary`, `float`, `int`, `numpy.ndarray`, or `str`(hexadecimal).
 
         Parameter :
         ---
-            `value` : the value of the variable, the type of this can be `float`, `int` for setting
-                the value in decimal format, or `np.ndarray` in binary, `str` in hexadecimal.
+            `value` : the value of the variable.
         """
-        if type(value) == float or type(value) == int:
+        if type(value) == binary:
+            if value.dec < 0 and not self.__signed: raise ValueError("Negative signed binary variable cannot be assigned to unsigned binary variable")
+            self.__bin = dec2bin(value.dec, width=self.__width, fixed_point=self.__fixed_point, signed=self.__signed)
+            self.__dec = bin2dec(self.__bin, fixed_point=self.__fixed_point, signed=self.__signed)
+        elif type(value) == float or type(value) == int:
             self.__bin = dec2bin(value, width=self.__width, fixed_point=self.__fixed_point, signed=self.__signed)
             self.__dec = bin2dec(self.__bin, fixed_point=self.__fixed_point, signed=self.__signed)
         elif type(value) == np.ndarray:
+            if value.shape[0] != self.__width: raise ValueError("The width of the binary number is not match")
             self.__bin = value
             self.__dec = bin2dec(value, fixed_point=self.__fixed_point, signed=self.__signed)
         elif type(value) == str:
@@ -82,14 +111,6 @@ class binary:
             self.__bin = hex2bin(value, width=self.__width)
         else:
             raise ValueError("The type must be `float`, `int`, `np.ndarray` or `str`")
-
-
-    def __str__(self) -> str:
-        return binary_string(self.__bin)
-
-
-    def __round__(self, width: int) -> float:
-        return binary_round(self.__bin, width=width)
 
 
 def full_add(a: bool, b: bool, c: bool) -> tuple:
