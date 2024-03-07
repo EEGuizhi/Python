@@ -9,7 +9,7 @@ import numpy as np
 WIDTH = 16
 
 class binary:
-    def __init__(self, value = None, width = WIDTH, signed = True, fixed_point = 0) -> None:
+    def __init__(self, value = None, width = WIDTH, signed = True, fixed_point = 0, prefix = False) -> None:
         """Declare a binary variable.
 
         Parameters :
@@ -22,6 +22,7 @@ class binary:
         self.__width = width
         self.__signed = signed
         self.__fixed_point = fixed_point
+        self.__prefix = prefix
         if value == None:
             self.__dec, self.__bin = None, None
         else:
@@ -47,6 +48,9 @@ class binary:
     def bin(self) -> np.ndarray:
         return self.__bin
 
+    @property
+    def prefix(self) -> bool:
+        return self.__prefix
 
     def __call__(self, format = "bin") -> np.array:
         """return the value of variable in binary format (numpy array).
@@ -60,31 +64,33 @@ class binary:
         elif format == "dec":
             return self.__dec
         else:
-            raise ValueError("The format must be \"bin\" (binary) or \"dec\" (decimal). ")
+            raise ValueError("The format must be `bin` (binary) or `dec` (decimal). ")
 
     def __str__(self) -> str:
-        return binary_string(self.__bin)
+        return binary_string(self.__bin, self.__prefix)
 
     def __round__(self, width: int) -> float:
         """Binary round, rounding the binary number into new"""
         return binary_round(self.__bin, width=width)
 
-    def __eq__(self, value) -> bool:
-        pass
-
 
     @dec.setter
     def dec(self, value: float) -> None:
-        if type(value) != float and type(value) != int: raise TypeError("Type of `value` must be `float` or `int`")
+        if type(value) != float and type(value) != int: raise TypeError("Type of `dec` must be `float` or `int`")
         self.__bin = dec2bin(value, width=self.__width, fixed_point=self.__fixed_point, signed=self.__signed)
         self.__dec = bin2dec(self.__bin, fixed_point=self.__fixed_point, signed=self.__signed)
 
     @bin.setter
     def bin(self, value: np.ndarray) -> None:
-        if type(value) != np.ndarray: raise TypeError("Type of `value` must be `numpy.ndarray`")
+        if type(value) != np.ndarray: raise TypeError("Type of `bin` must be `numpy.ndarray`")
         if value.shape[0] != self.__width: raise ValueError("The width of the binary number is not match")
         self.__bin = value
         self.__dec = bin2dec(self.__bin, fixed_point=self.__fixed_point, signed=self.__signed)
+
+    @prefix.setter
+    def prefix(self, value: bool) -> None:
+        if type(value) != bool: raise TypeError("Type of `prefix` must be `bool`")
+        self.__prefix = value
 
 
     def set_value(self, value) -> None:
@@ -240,10 +246,10 @@ def print_bin(num: np.ndarray, end: str = '\n'):
     print(binary_string(num), end=end)
 
 
-def binary_string(num: np.ndarray):
-    """Turn a binary number np array into a string"""
+def binary_string(num: np.ndarray, prefix = False):
+    """Turn a binary number (numpy.array) into a string (str)"""
     string = ""
     for i in range(num.shape[0]):
         if i % 4 == 0 and i != 0: string = '_' + string
         string = '1' + string if num[i] else '0' + string
-    return string
+    return f"{num.shape[0]}'b" + string if prefix else string
