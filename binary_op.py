@@ -18,6 +18,7 @@ class binary:
             `width` : the width of the variable.
             `signed` : `True` for signed, `False` for unsigned.
             `fixed_point` : the index of 2^0 digit in binary format.
+            `prefix` : if the string has the width prefix in front of the binary number.
         """
         self.__width = width
         self.__signed = signed
@@ -113,8 +114,8 @@ class binary:
             self.__bin = value
             self.__dec = bin2dec(value, fixed_point=self.__fixed_point, signed=self.__signed)
         elif type(value) == str:
-            self.__dec = hex2dec(value, width=self.__width, signed=self.__signed)
             self.__bin = hex2bin(value, width=self.__width)
+            self.__dec = bin2dec(value, fixed_point=self.__fixed_point, signed=self.__signed)
         else:
             raise ValueError("The type must be `float`, `int`, `np.ndarray` or `str`")
 
