@@ -242,6 +242,28 @@ def hex2dec(hex_str: str, width: int = WIDTH, fixed_point: int = 0, signed: bool
     return bin2dec(hex2bin(hex_str, width), fixed_point=fixed_point, signed=signed)
 
 
+def bin2hex(num: np.ndarray, prefix = False) -> str:
+    length = num.shape[0] // 4
+    if num.shape[0] % 4 != 0:
+        length += 1
+
+    hex = ""
+    for i in range(length):
+        dec = 0
+        for j in range(4):
+            if i * 4 + j == num.shape[0]:
+                break
+            dec += 2**j if num[i * 4 + j] == 1 else 0
+        if dec < 10:    hex = str(dec) + hex
+        elif dec == 10: hex = 'A' + hex
+        elif dec == 11: hex = 'B' + hex
+        elif dec == 12: hex = 'C' + hex
+        elif dec == 13: hex = 'D' + hex
+        elif dec == 14: hex = 'E' + hex
+        else:           hex = 'F' + hex
+    return f"{num.shape[0]}'h" + hex if prefix else hex
+
+
 def print_bin(num: np.ndarray, end: str = '\n'):
     """Print a binary number"""
     print(binary_string(num), end=end)
@@ -254,3 +276,13 @@ def binary_string(num: np.ndarray, prefix = False):
         if i % 4 == 0 and i != 0: string = '_' + string
         string = '1' + string if num[i] else '0' + string
     return f"{num.shape[0]}'b" + string if prefix else string
+
+
+def read_dat_file(dat_file: str, width = WIDTH, fixed_point = 0, signed = False) -> np.ndarray:
+    data = []
+    with open(dat_file, 'r') as file:
+        for line in file:
+            remove = min(line.find(' '), line.find('/'))
+            num = hex2dec(line[:remove], width, fixed_point, signed)
+            data.append(num)
+    return np.array(data)
