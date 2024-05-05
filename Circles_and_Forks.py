@@ -97,4 +97,4 @@ if __name__ == "__main__":
         game.update_table(turn)
         game.draw_table()
 
-    print(f">> Game over ! {turn} has win the game !!")
+    print(f">> Game over ! \"{turn}\" is winner !!" + " " * 50)
