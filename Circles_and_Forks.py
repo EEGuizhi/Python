@@ -44,18 +44,18 @@ class circle_fork:
             self.table[self.history[0][0]][self.history[0][1]] = ' '
             self.history.pop(0)
 
-    def draw_table(self, init_space = 10) -> None:
+    def draw_table(self, row = 2, col = 10) -> None:
         """ Drawing game table """
-        move_cursor(row=2, col=0)
+        move_cursor(row=row, col=0)
         end_chars = ['|', '|', '\n']
         for r in range(3):
-            print(' ' * init_space + "       |       |       ")
-            print(' ' * init_space, end='')
+            print(' ' * col + "       |       |       ")
+            print(' ' * col, end='')
             for c in range(3):
                 print(f"   {self.table[r][c]}   {end_chars[c]}", end='')
-            print(' ' * init_space + "       |       |       ")
+            print(' ' * col + "       |       |       ")
             if r < 2:
-                print(' ' * init_space + "-----------------------")
+                print(' ' * col + "-----------------------")
 
 def move_cursor(row: int, col: int):
     """ Move the cursor on terminal to the given position (start from 1) """
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
         # Give action
         while True:
-            move_cursor(row=13, col=0)
+            move_cursor(row = 4*game.size + 1, col = 0)
             print(" " * 100, end='\r')
             pos = input(f">> Is \"{turn}\"'s turn ! please input the position (x, y): ")
             pos = pos.replace('(', '').replace(')', '').replace(' ', '').split(',')
