@@ -1,24 +1,22 @@
 # EEGuizhi
 """
 This is a simple tool for binary operations in Python,
-and binary number will be implemented with integer numpy array.
+binary numbers are implemented with 1-dim integer numpy array.
 """
 import numpy as np
 
-# Defualt settings
-WIDTH = 16
 
 class binary:
-    def __init__(self, value = None, width = WIDTH, signed = True, fixed_point = 0, prefix = False) -> None:
+    def __init__(self, value = 0.0, width = 32, fixed_point = 0, signed = True, prefix = False) -> None:
         """Declare a binary variable.
 
-        Parameters :
+        Parameters:
         ---
-            `value` : the value of the variable, type can be `binary`, `float`, `int`, `numpy.ndarray`, or `str`(hexadecimal).
-            `width` : the width of the variable.
-            `signed` : `True` for signed, `False` for unsigned.
-            `fixed_point` : the index of 2^0 digit in binary format.
-            `prefix` : if the string has the width prefix in front of the binary number.
+            `value`: the value of the variable, type can be `binary`, `float`, `int`, `numpy.ndarray`, or `str`(hexadecimal).
+            `width`: the width of the variable.
+            `fixed_point`: the index of 2^0 digit in binary format.
+            `signed`: `True` for signed, `False` for unsigned.
+            `prefix`: if the string has width & radix info prefix in front of the binary number.
         """
         self.__width = width
         self.__signed = signed
@@ -50,28 +48,37 @@ class binary:
         return self.__bin
 
     @property
+    def hex(self) -> str:
+        return bin2hex(self.__bin, self.prefix)
+
+    @property
     def prefix(self) -> bool:
         return self.__prefix
 
-    def __call__(self, format = "bin") -> np.array:
-        """return the value of variable in binary format (numpy array).
-        
-        Parameter :
+    def __call__(
+            self, value = 0.0, width: int = None, fixed_point: int = None,
+            signed: bool = None, prefix: bool = None
+        ) -> None:
+        """Reset the binary variable.
+
+        Parameters:
         ---
-        `format` : must be "bin" or "dec"
+            `value`: the value of the variable, type can be `binary`, `float`, `int`, `numpy.ndarray`, or `str`(hexadecimal).
+            `width`: the width of the variable.
+            `signed`: `True` for signed, `False` for unsigned.
+            `fixed_point`: the index of 2^0 digit in binary format.
+            `prefix`: if there will be a width prefix in front of the binary number.
         """
-        if format == "bin":
-            return self.__bin
-        elif format == "dec":
-            return self.__dec
-        else:
-            raise ValueError("The format must be `bin` (binary) or `dec` (decimal). ")
+        self.__width = self.__width if width == None else width
+        self.__signed = self.__signed if signed == None else signed
+        self.__fixed_point = self.__fixed_point if fixed_point == None else fixed_point
+        self.__prefix = self.__prefix if prefix == None else prefix
+        self.set_value(value)
 
     def __str__(self) -> str:
-        return binary_string(self.__bin, self.__prefix)
+        return binary_string(self)
 
     def __round__(self, width: int) -> float:
-        """Binary round, rounding the binary number into new"""
         return binary_round(self.__bin, width=width)
 
 
@@ -95,12 +102,12 @@ class binary:
 
 
     def set_value(self, value) -> None:
-        """Setting value of the binary variable.
+        """Set the value of the binary variable.
         - the type of `value` can be `binary`, `float`, `int`, `numpy.ndarray`, or `str`(hexadecimal).
 
-        Parameter :
+        Parameters:
         ---
-            `value` : the value of the variable.
+            `value`: the value of the variable.
         """
         if type(value) == binary:
             if value.dec < 0 and not self.__signed: raise ValueError("Negative signed binary variable cannot be assigned to unsigned binary variable")
@@ -120,9 +127,9 @@ class binary:
             raise ValueError("The type must be `float`, `int`, `np.ndarray` or `str`")
 
 
-def full_add(a: bool, b: bool, c: bool) -> tuple:
-    """Act like a full adder, need intput (1bit)`a`, (1bit)`b` and (1bit)`c`.
-    
+def full_add(a: bool, b: bool, c: bool) -> tuple[bool, bool]:
+    """Act like a full adder, intput (1bit) `a`, `b`, `c` and return sum, carry.
+
     Returns:
     ---
         tuple: (carry: bool, sum: bool)
@@ -130,15 +137,36 @@ def full_add(a: bool, b: bool, c: bool) -> tuple:
     return (a&b | c&(b|a), a ^ b ^ c)
 
 
-def binary_add(num1: np.ndarray, num2:np.ndarray, width: int = None) -> np.ndarray:
-    if width == None: width = num1.shape[0]
+def add(num1: np.ndarray, num2: np.ndarray, width: int = None) -> np.ndarray:
+    """Applying binary addition to sum two numbers.
+
+    Parameters:
+    ---
+    `num1`: the first binary number
+    `num2`: the second binary number
+    `width`: the width of binary number after summing
+    """
+    if width == None: width = max(num1.shape[0], num2.shape[0])
     carry, sum = 0, np.zeros(width, dtype=int)
     for i in range(width):
         carry, sum[i] = full_add(num1[i], num2[i], carry)
     return sum
 
 
-def binary_mult(num1: np.ndarray, num2: np.ndarray, width: int = WIDTH) -> np.ndarray:
+def twos_comp(num: np.ndarray) -> np.ndarray:
+    return add(inv(num), dec2bin(1, num.shape[0]), num.shape[0])
+
+def neg(num: np.ndarray) -> np.ndarray:  # same as 2s_comp
+    return twos_comp(num)
+
+def inv(num: np.ndarray) -> np.ndarray:
+    val = num.copy()
+    for i in range(val.shape[0]):
+        val[i] = 0 if val[i] == 1 else 1
+    return val
+
+
+def mult(num1: np.ndarray, num2: np.ndarray, width: int) -> np.ndarray:
     # init
     a = np.zeros(width, dtype=int) if num1[-1] == 0 else np.ones(width, dtype=int)
     b = np.zeros(width, dtype=int) if num2[-1] == 0 else np.ones(width, dtype=int)
@@ -150,30 +178,24 @@ def binary_mult(num1: np.ndarray, num2: np.ndarray, width: int = WIDTH) -> np.nd
     for i in range(width):
         if b[i] == 1:
             tmp = np.zeros(width, dtype=int)
-            tmp[i:] = a[:width - i] if i != width - 1 else binary_2s_comp(a[:width - i])
-            sum = binary_add(sum, tmp)
+            tmp[i:] = a[:width - i] if i != width - 1 else twos_comp(a[:width - i])
+            sum = add(sum, tmp)
 
     return sum
 
 
-def binary_2s_comp(num: np.ndarray) -> np.ndarray:
-    return binary_add(binary_inv(num), dec2bin(1, num.shape[0]), num.shape[0])
-
-
-def binary_inv(num: np.ndarray) -> np.ndarray:
-    val = num.copy()
-    for i in range(val.shape[0]):
-        val[i] = 0 if val[i] == 1 else 1
-    return val
+def resize(num: np.ndarray, width: int, lsb = 0, round = False):
+    """"""
 
 
 def binary_round(num: np.ndarray, width: int) -> np.ndarray:
-    """`width`: new width of the number"""
+    """`width`: new width of the number must less than original width"""
+    if width >= num.shape[0]: raise ValueError("new width must less than original width")
     binary = num[width - 1:].copy()
-    return binary_add(binary, dec2bin(1, width)) if num[width] == 1 else binary
+    return add(binary, dec2bin(1, width)) if num[width] == 1 else binary
 
 
-def dec2bin(num: float, width: int = WIDTH, fixed_point: int = 0, signed = True) -> np.ndarray:
+def dec2bin(num: float, width: int = 32, fixed_point: int = 0, signed = True) -> np.ndarray:
     if num < 0 and not signed: raise ValueError("num cannot be a negative value")
     val, binary = abs(num), np.zeros(width, dtype=int)
     idx = width - 2 if signed else width - 1
@@ -183,19 +205,19 @@ def dec2bin(num: float, width: int = WIDTH, fixed_point: int = 0, signed = True)
             binary[idx] = 1
             val -= 2**power
         idx -= 1
-    return binary if num > 0 else binary_2s_comp(binary)
+    return binary if num > 0 else twos_comp(binary)
 
 
 def bin2dec(num: np.ndarray, fixed_point: int = 0, signed: bool = True) -> float:
     width = num.shape[0]
-    binary = binary_2s_comp(num) if num[width - 1] == 1 and signed else num
+    binary = twos_comp(num) if num[width - 1] == 1 and signed else num
     value = 0
     for i in range(binary.shape[0]):
         value += 2**(i - fixed_point) if binary[i] == 1 else 0
     return (-1) * value if num[width - 1] == 1 and signed else value
 
 
-def hex2bin(hex_str: str, width: int = WIDTH) -> np.ndarray:
+def hex2bin(hex_str: str, width: int = 32) -> np.ndarray:
     """Turn a hexadecimal(0~F) string into binary number np array"""
     length, binary = len(hex_str), np.zeros(width, dtype=int)
     if width < length * 4: raise ValueError("width is not match with the hex_str")
@@ -238,7 +260,7 @@ def hex2bin(hex_str: str, width: int = WIDTH) -> np.ndarray:
     return binary
 
 
-def hex2dec(hex_str: str, width: int = WIDTH, fixed_point: int = 0, signed: bool = True) -> int:
+def hex2dec(hex_str: str, width: int = 32, fixed_point: int = 0, signed: bool = True) -> int:
     return bin2dec(hex2bin(hex_str, width), fixed_point=fixed_point, signed=signed)
 
 
@@ -254,7 +276,7 @@ def bin2hex(num: np.ndarray, prefix = False) -> str:
             if i * 4 + j == num.shape[0]:
                 break
             dec += 2**j if num[i * 4 + j] == 1 else 0
-        if dec < 10:    hex = str(dec) + hex
+        if   dec <  10: hex = str(dec) + hex
         elif dec == 10: hex = 'A' + hex
         elif dec == 11: hex = 'B' + hex
         elif dec == 12: hex = 'C' + hex
@@ -264,21 +286,75 @@ def bin2hex(num: np.ndarray, prefix = False) -> str:
     return f"{num.shape[0]}'h" + hex if prefix else hex
 
 
-def print_bin(num: np.ndarray, end: str = '\n'):
-    """Print a binary number"""
-    print(binary_string(num), end=end)
+def dec2hex(num: float, width: int, fixed_point: int):
+    """"""
 
 
-def binary_string(num: np.ndarray, prefix = False):
-    """Turn a binary number (numpy.array) into a string (str)"""
+
+def str2bin(num: str, fixed_point = 0, signed = False, prefix = False) -> binary:
+    """Turn a binary number (str) into a binary variable (binary)
+
+    Parameters:
+    ---
+        `num`: binary string (must include prefix of width & radix)
+        `fixed_point`: the index of 2^0 digit in binary format.
+        `signed`: `True` for signed, `False` for unsigned.
+        `prefix`: if the string has width & radix info prefix in front of the binary number.
+
+    Returns:
+    ---
+        A binary variable (binary).
+    """
+    if type(num) != str: raise TypeError("Type of `num` must be `str`")
+
+    prime = num.find("'")
+    width = int(num[:prime])
+    radix = num[prime + 1]
+    num = num[prime + 2:].replace('_', '')
+
+    if not width > 0 or radix not in "bhd":
+        raise ValueError("The width of number must be set correctly")
+    elif radix == 'b':
+        for i in range(len(num) - 1, -1, -1):
+            pass
+    elif radix == 'h':
+        pass
+    else:
+        pass
+
+
+def binary_string(num: binary):
+    """Turn a binary number (numpy.array) into a string (str)
+    
+    Parameters:
+    ---
+    `num`: binary variable
+    
+    Returns:
+    ---
+    binary number in string form
+    """
     string = ""
-    for i in range(num.shape[0]):
+    for i in range(num.bin.shape[0]):
         if i % 4 == 0 and i != 0: string = '_' + string
-        string = '1' + string if num[i] else '0' + string
-    return f"{num.shape[0]}'b" + string if prefix else string
+        string = '1' + string if num.bin[i] else '0' + string
+    return f"{num.bin.shape[0]}'b" + string if num.prefix else string
 
 
-def read_dat_file(dat_file: str, width = WIDTH, fixed_point = 0, signed = False) -> np.ndarray:
+def read_dat_file(dat_file: str, width = int, fixed_point = 0, signed = False) -> np.ndarray:
+    """Read hexadecimal numbers in the `.dat` file and return as a numpy array
+    
+    Parameters:
+    ---
+    `dat_file`: the path of file to be read
+    `width`: width of the numbers in the file
+    `fixed_point`: the fixed point of the numbers in the file
+    `signed`: if the numbers in the file are signed number or not
+    
+    Returns:
+    ---
+    `data`: 1-dim (decimal) integer numpy array
+    """
     data = []
     with open(dat_file, 'r') as file:
         for line in file:
