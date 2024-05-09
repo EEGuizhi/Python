@@ -47,15 +47,15 @@ class circle_fork:
     def draw_table(self, row = 2, col = 10) -> None:
         """ Drawing game table """
         move_cursor(row=row, col=0)
-        end_chars = ['|', '|', '\n']
-        for r in range(3):
-            print(' ' * col + "       |       |       ")
+        end_chars = '|' * (self.size - 1) + '\n'
+        for r in range(self.size):
+            print(' ' * col + "       |" * (self.size - 1))
             print(' ' * col, end='')
-            for c in range(3):
+            for c in range(self.size):
                 print(f"   {self.table[r][c]}   {end_chars[c]}", end='')
-            print(' ' * col + "       |       |       ")
-            if r < 2:
-                print(' ' * col + "-----------------------")
+            print(' ' * col + "       |" * (self.size - 1))
+            if r < self.size - 1:
+                print(' ' * col + "-" * (8 * self.size - 1))
 
 def move_cursor(row: int, col: int):
     """ Move the cursor on terminal to the given position (start from 1) """
@@ -67,7 +67,7 @@ def move_cursor(row: int, col: int):
 
 if __name__ == "__main__":
     # Initial
-    game = circle_fork()
+    game = circle_fork(size=5)
 
     # Game loop
     turn = 'X'
