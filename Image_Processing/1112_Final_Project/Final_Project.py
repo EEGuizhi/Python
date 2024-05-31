@@ -207,7 +207,7 @@ def HistMatch(Is:np.ndarray, Hs:np.ndarray, Ho:np.ndarray, channel:int, pixel_co
     Hs /= total_area
     total_area = np.sum(Ho)
     Ho *= pixel_count
-    Hs /= total_area
+    Ho /= total_area
 
     # Cumulative Histogram
     Ho = np.cumsum(Ho)
