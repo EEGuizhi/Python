@@ -21,6 +21,9 @@
 
 
 ## Things that confuse me (& how I deal with)
+- The `perc/Smax` term in the line `for each level k in perc/Smax` in pseudo code is very weird,
+I change it into `perc * Smax`.
+
 - $S_{max}$ (Eq.7) of source and target images (histogram) should be the same,
 and $B_{min}$ (in Eq.7) should be same too, so bins ($B$) amount of source and target are same.
 
