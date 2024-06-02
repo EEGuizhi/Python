@@ -32,7 +32,7 @@ and $B_{min}$ (in Eq.7) should be same too, so bins ($B$) amount of source and t
 - Because of above statments, $min(I)$ and $max(I)$ of source and target images are same. $min(I)$ and $max(I)$ refer to the lowest and highest possible value of image.
 
 - Eq.12 is very weird because $h_{o, k}$ doesn't exist when $k = S_{max}$ (at the same time $w_{s, k} = 0$). <br> So I rewrite the equation：
-$$h_{o, k} = (h_{s, k}-\mu_{s, k}) \times \frac{w．\sigma_{t, k} + (1-w)．\sigma_{s, k}}{\sigma_{s, k}} + w．\mu_{t, k} + (1-w)．\mu_{s, k}$$ <br> ($w = w_{t, k}$)
+$$h_{o, k} = (h_{s, k}-\mu_{s, k}) \times \frac{w_{t, k}．\sigma_{t, k} + w_{s, k}．\sigma_{s, k}}{\sigma_{s, k}} + w_{t, k}．\mu_{t, k} + w_{s, k}．\mu_{s, k}$$ <br>
 
-- When RegionTransfer function only transfer one bin, std ($\sigma$) will equals to 0 at the same time. <br> So equation will become： $$h_{o, k} = (h_{s, k}-\mu_{s, k}) + w．\mu_{t, k} + (1-w)．\mu_{s, k}$$ <br> (Remove the std term to avoid divided by zero problem.)
+- When RegionTransfer function only transfer one bin, std ($\sigma$) will equals to 0 at the same time. <br> So equation will become： $$h_{o, k} = (h_{s, k}-\mu_{s, k}) + w_{t, k}．\mu_{t, k} + w_{s, k}．\mu_{s, k}$$ <br> (Remove the std term to avoid divided by zero problem.)
 
