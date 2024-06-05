@@ -14,8 +14,9 @@ NUM = "02"
 PATH_SRC = f"Image_Processing/1112_Final_Project/source/source_{NUM}.jpg"
 PATH_TAR = f"Image_Processing/1112_Final_Project/target/target_{NUM}.jpg"
 
+STEP = 0.1
 B_MIN = 10
-PERC = [25, 50, 60, 70, 80, 90, 100]
+PERC = [10, 30, 50, 60, 70, 80, 90, 100]
 W_A = 1.0  # Mask
 CH_RANGE = (  # https://stackoverflow.com/questions/11386556/converting-an-opencv-bgr-8-bit-image-to-cie-lab
     (0, 256),
@@ -33,7 +34,7 @@ def compute_Smax(Bins: np.ndarray, Bmin: int) -> np.ndarray:
 def histogram(img: np.ndarray, value_range: tuple, normalize: bool) -> np.ndarray:
     """ Compute histogram of input image """
     hist, _ = np.histogram(
-        img, np.arange(value_range[0], value_range[1]),
+        img, np.arange(value_range[0], value_range[1] + 1),
         (value_range[0], value_range[1]),
         density=normalize
     )
@@ -97,25 +98,26 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=1.0, s
             threshold = Wa * (CH_RANGE[ic][1] - CH_RANGE[ic][0] + 1)
             Mask[source_lab[:, :, ic] > threshold] = 1
 
-        for k in range(1, round((perc/100) * Smax[ic]) + 1):
+        levels = list(np.arange(STEP, perc/100 + STEP, STEP) * Smax[ic])
+        for k in levels:
+            scale = round(k, 2)
+
             # Compute Bk
-            Bk = int(Bins[ic] * pow(2, k - Smax[ic]))
-            print(f">> k: {k}, Bk: {Bk},   ", end='')
+            Bk = int(Bins[ic] * pow(2, scale - Smax[ic]))
+            print(f">> k: {scale}, Bk: {Bk}   ", end='')
 
             # Down-sample and then up-sample
-            print("resampling..  ", end='')
             Hs_k, Ht_k = resample_histogram(Hs, Bk, True), resample_histogram(Ht, Bk, True)
             Hs_k, Ht_k = resample_histogram(Hs_k, Bins[ic], True), resample_histogram(Ht_k, Bins[ic], True)
 
             # Region transfer 1
-            print("region transfering.. ")
             Rmin_t = findpeaks(Ht_k)
             Hs_kp = np.empty_like(Hs_k)
             for m in range(Rmin_t.shape[0] - 1):
                 Hs_kp[Rmin_t[m]:Rmin_t[m+1]] = RegionTransfer(
                     Hs_k[Rmin_t[m]:Rmin_t[m+1]],
                     Ht_k[Rmin_t[m]:Rmin_t[m+1]],
-                    k / Smax[ic]
+                    scale / Smax[ic]
                 )
 
             # Region transfer 2
@@ -125,13 +127,13 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=1.0, s
                 Ho_k[Rmin_s[m]:Rmin_s[m+1]] = RegionTransfer(
                     Hs_kp[Rmin_s[m]:Rmin_s[m+1]],
                     Ht_k[Rmin_s[m]:Rmin_s[m+1]],
-                    k / Smax[ic]
+                    scale / Smax[ic]
                 )
 
             # Output becomes next round's input
             Hs = Ho_k
 
-        print(">> histogram matching.. \n")
+        print("\n>> histogram matching.. \n")
         Hs = histogram(source_lab[:, :, ic], CH_RANGE[ic], False)
         Io[:, :, ic] = histogram_matching(
             source_lab[:, :, ic],
@@ -215,6 +217,17 @@ def histogram_matching(Is: np.ndarray, Hs: np.ndarray, Ho: np.ndarray, value_ran
     return Io.astype(dtype=np.uint8)
 
 
+def contrast_modify(Is: np.ndarray, Io: np.ndarray, wc: float) -> np.ndarray:
+    """ Smooth the image """
+    Is, Io = Is.copy(), Io.copy()
+    Is, Io = Is.astype(dtype=np.float32), Io.astype(dtype=np.float32)
+    Ires_s = cv2.bilateralFilter(Is, 15, 75, 75)
+    Ires_o = cv2.bilateralFilter(Io, 15, 75, 75)
+    Io = Io + wc * (Ires_s - Ires_o)
+    Io[Io < 0], Io[Io > 255] = 0, 255
+    return Io.astype(dtype=np.uint8)
+
+
 def Full_ReshapeHistogram(Is: np.ndarray, It: np.ndarray) -> np.ndarray:
     source_lab = cv2.cvtColor(Is, cv2.COLOR_BGR2Lab)
     target_lab = cv2.cvtColor(It, cv2.COLOR_BGR2Lab)
@@ -244,5 +257,6 @@ if __name__ == "__main__":
         print("\n=======================================================")
         print(f">> Start the case of perc = {perc}%")
         output_img = ReshapeHistogram(source_img, target_img, perc, W_A, False)
+        # output_img = contrast_modify(source_img, output_img, 0.1)
         cv2.imwrite(f"Image_Processing/1112_Final_Project/output/output_{NUM}_perc_{perc}.jpg", output_img)
         print(">> done")
