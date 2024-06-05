@@ -17,7 +17,7 @@ PATH_TAR = f"Image_Processing/1112_Final_Project/target/target_{NUM}.jpg"
 STEP = 0.1
 B_MIN = 10
 PERC = [10, 30, 50, 60, 70, 80, 90, 100]
-W_A = 1.0  # Mask
+W_A = -1  # Mask
 CH_RANGE = (  # https://stackoverflow.com/questions/11386556/converting-an-opencv-bgr-8-bit-image-to-cie-lab
     (0, 256),
     (0, 256),
@@ -64,7 +64,7 @@ def resample_histogram(Hist: np.ndarray, Bins: int, normalize: bool) -> np.ndarr
     return resampHist
 
 
-def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=1.0, show_hist=False) -> np.ndarray:
+def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=-1, show_hist=False) -> np.ndarray:
     """ Reshape the histogram of `Is` to be similar as `It`
 
     Parameters:
@@ -82,6 +82,12 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=1.0, s
     # Initalize
     Io = np.empty_like(source_lab)
     Bins = np.array([CH_RANGE[ic][1] - CH_RANGE[ic][0] for ic in range(3)])
+    
+    # Mask
+    mask = np.ones_like(source_lab[:, :, 0], dtype=int)
+    th1 = Wa * (source_lab[:, :, 1].max() - source_lab[:, :, 1].min()) + np.min(source_lab[:, :, 1] - 128)
+    th2 = Wa * (source_lab[:, :, 2].max() - source_lab[:, :, 2].min()) + np.min(source_lab[:, :, 2] - 128)
+    mask[(abs(source_lab[:, :, 1] - 128) <= th1) | (abs(source_lab[:, :, 2] - 128) <= th2)] = 0
 
     # Compute Smax
     Smax = compute_Smax(Bins, B_MIN)
@@ -89,14 +95,8 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=1.0, s
     # For each channel
     for ic in range(3):
         # Compute histograms
-        Hs = histogram(source_lab[:, :, ic], CH_RANGE[ic], False)
+        Hs = histogram(source_lab[mask == 1, ic], CH_RANGE[ic], False)
         Ht = histogram(target_lab[:, :, ic], CH_RANGE[ic], False)
-
-        # Mask
-        Mask = np.zeros_like(source_lab[:, :, ic])
-        if Wa < 1 and ic != 0:
-            threshold = Wa * (CH_RANGE[ic][1] - CH_RANGE[ic][0] + 1)
-            Mask[source_lab[:, :, ic] > threshold] = 1
 
         levels = list(np.arange(STEP, perc/100 + STEP, STEP) * Smax[ic])
         for k in levels:
@@ -134,21 +134,21 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=1.0, s
             Hs = Ho_k
 
         print("\n>> histogram matching.. \n")
-        Hs = histogram(source_lab[:, :, ic], CH_RANGE[ic], False)
+        Hs = histogram(source_lab[mask == 1, ic], CH_RANGE[ic], False)
         Io[:, :, ic] = histogram_matching(
             source_lab[:, :, ic],
             Hs,
             Ho_k,
             CH_RANGE[ic],
             source_lab.shape[0] * source_lab.shape[1],
-            Mask
+            mask
         )
 
         # Plot histograms
         if show_hist:
-            plt.plot(Hs / Hs.sum(), label='source')
-            plt.plot(Ht / Ht.sum(), label='target')
-            plt.plot(Ho_k, label='output')
+            plt.plot(Hs / Hs.sum(), label="source")
+            plt.plot(Ht / Ht.sum(), label="target")
+            plt.plot(Ho_k, label="output")
             plt.xlim(left=0, right=256), plt.ylim(top=0.1, bottom=0), plt.legend()
             plt.show(), cv2.waitKey(0)
 
@@ -211,7 +211,7 @@ def histogram_matching(Is: np.ndarray, Hs: np.ndarray, Ho: np.ndarray, value_ran
     new_pix_value = np.interp(Hs, Ho, np.arange(Imin, Imax))
 
     Io, Im = Is.ravel(), Im.ravel()
-    Io[Im == 0] = new_pix_value[Io[Im == 0]]
+    Io[Im == 1] = new_pix_value[Io[Im == 1]]
     Io = np.reshape(Io, Is.shape)
 
     return Io.astype(dtype=np.uint8)
@@ -235,14 +235,14 @@ def Full_ReshapeHistogram(Is: np.ndarray, It: np.ndarray) -> np.ndarray:
     for ic in range(3):
         Hs = histogram(source_lab[:, :, ic], CH_RANGE[ic], False)
         Ht = histogram(target_lab[:, :, ic], CH_RANGE[ic], False)
-        Mask = np.zeros_like(source_lab[:, :, ic])
+        mask = np.ones_like(source_lab[:, :, ic])
         Io[:, :, ic] = histogram_matching(
             source_lab[:, :, ic],
             Hs,
             Ht,
             ic,
             source_lab.shape[0] * source_lab.shape[1],
-            Mask
+            mask
         )
     output_img = cv2.cvtColor(Io, cv2.COLOR_Lab2BGR)
     return output_img
