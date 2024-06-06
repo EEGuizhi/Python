@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 """
 Python implementation code of:
@@ -14,8 +15,12 @@ NUM = "02"
 PATH_SRC = f"Image_Processing/1112_Final_Project/source/source_{NUM}.jpg"
 PATH_TAR = f"Image_Processing/1112_Final_Project/target/target_{NUM}.jpg"
 
+SHOW_HIST = False
+CHANNEL = 1
+
+SIMPLE_TRANSFER = False
 STEP = 0.1
-B_MIN = 10
+B_MIN = 75
 PERC = [10, 30, 50, 60, 70, 80, 90, 100]
 W_A = -1  # Mask
 CH_RANGE = (  # https://stackoverflow.com/questions/11386556/converting-an-opencv-bgr-8-bit-image-to-cie-lab
@@ -64,7 +69,7 @@ def resample_histogram(Hist: np.ndarray, Bins: int, normalize: bool) -> np.ndarr
     return resampHist
 
 
-def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=-1, show_hist=False) -> np.ndarray:
+def Reshape_Histogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=-1, simple_transfer=False, show_hist=False) -> np.ndarray:
     """ Reshape the histogram of `Is` to be similar as `It`
 
     Parameters:
@@ -99,12 +104,11 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=-1, sh
         Ht = histogram(target_lab[:, :, ic], CH_RANGE[ic], False)
 
         levels = list(np.arange(STEP, perc/100 + STEP, STEP) * Smax[ic])
-        for k in levels:
+        for k in tqdm(levels):
             scale = round(k, 2)
 
             # Compute Bk
             Bk = int(Bins[ic] * pow(2, scale - Smax[ic]))
-            print(f">> k: {scale}, Bk: {Bk}   ", end='')
 
             # Down-sample and then up-sample
             Hs_k, Ht_k = resample_histogram(Hs, Bk, True), resample_histogram(Ht, Bk, True)
@@ -117,7 +121,8 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=-1, sh
                 Hs_kp[Rmin_t[m]:Rmin_t[m+1]] = RegionTransfer(
                     Hs_k[Rmin_t[m]:Rmin_t[m+1]],
                     Ht_k[Rmin_t[m]:Rmin_t[m+1]],
-                    scale / Smax[ic]
+                    scale / Smax[ic],
+                    simple_transfer
                 )
 
             # Region transfer 2
@@ -127,13 +132,14 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=-1, sh
                 Ho_k[Rmin_s[m]:Rmin_s[m+1]] = RegionTransfer(
                     Hs_kp[Rmin_s[m]:Rmin_s[m+1]],
                     Ht_k[Rmin_s[m]:Rmin_s[m+1]],
-                    scale / Smax[ic]
+                    scale / Smax[ic],
+                    simple_transfer
                 )
 
             # Output becomes next round's input
             Hs = Ho_k
 
-        print("\n>> histogram matching.. \n")
+        print(f">> (Channel = {ic}) histogram matching.. \n")
         Hs = histogram(source_lab[mask == 1, ic], CH_RANGE[ic], False)
         Io[:, :, ic] = histogram_matching(
             source_lab[:, :, ic],
@@ -145,11 +151,11 @@ def ReshapeHistogram(Is: np.ndarray, It: np.ndarray, perc: int, Wa: float=-1, sh
         )
 
         # Plot histograms
-        if show_hist:
+        if show_hist and (CHANNEL not in [0, 1, 2] or CHANNEL == ic):
             plt.plot(Hs / Hs.sum(), label="source")
             plt.plot(Ht / Ht.sum(), label="target")
             plt.plot(Ho_k, label="output")
-            plt.xlim(left=0, right=256), plt.ylim(top=0.1, bottom=0), plt.legend()
+            plt.xlim(left=0, right=256), plt.ylim(top=0.3, bottom=0), plt.legend()
             plt.show(), cv2.waitKey(0)
 
     # Convert Io back to RGB color space
@@ -169,7 +175,7 @@ def findpeaks(Hist: np.ndarray) -> np.ndarray:
 
     Rmin.insert(0, 0)
     Rmin.append(Hist.shape[0])
-    return np.array(Rmin)
+    return np.array(Rmin, dtype=int)
 
 
 def grad(arr: np.ndarray) -> np.ndarray:
@@ -180,17 +186,20 @@ def grad(arr: np.ndarray) -> np.ndarray:
     return grad
 
 
-def RegionTransfer(Hs: np.ndarray, Ht: np.ndarray, wt: float) -> np.ndarray:
+def RegionTransfer(Hs: np.ndarray, Ht: np.ndarray, wt: float, simple_transfer=False) -> np.ndarray:
     """ Region transfer function using adjusted Eqs.10~12 """
     ws = 1 - wt
     Hs_avg, Ht_avg = Hs.mean(), Ht.mean()
     Hs_std, Ht_std = Hs.std(), Ht.std()
 
-    Ho = Hs.copy()
-    if round(Hs_std, 8) != 0:
-        Ho = (Ho - Hs_avg) * (wt * Ht_std + ws * Hs_std) / Hs_std + wt * Ht_avg + ws * Hs_avg
+    if simple_transfer:
+        Ho = Hs * ws + Ht * wt
     else:
-        Ho = Ho - Hs_avg + wt * Ht_avg + ws * Hs_avg
+        Ho = Hs.copy()
+        if round(Hs_std, 8) != 0:
+            Ho = (Ho - Hs_avg) * (wt * Ht_std + ws * Hs_std) / Hs_std + wt * Ht_avg + ws * Hs_avg
+        else:
+            Ho = Ho - Hs_avg + wt * Ht_avg + ws * Hs_avg
 
     return Ho
 
@@ -221,14 +230,21 @@ def contrast_modify(Is: np.ndarray, Io: np.ndarray, wc: float) -> np.ndarray:
     """ Smooth the image """
     Is, Io = Is.copy(), Io.copy()
     Is, Io = Is.astype(dtype=np.float32), Io.astype(dtype=np.float32)
-    Ires_s = cv2.bilateralFilter(Is, 15, 75, 75)
-    Ires_o = cv2.bilateralFilter(Io, 15, 75, 75)
+    # Ires_s = cv2.bilateralFilter(Is, Is.shape[0] // 4, 75, 75)
+    # Ires_o = cv2.bilateralFilter(Io, Is.shape[0] // 4, 75, 75)
+    Ires_s = cv2.medianBlur(Is, 5)
+    Ires_o = cv2.medianBlur(Io, 5)
     Io = Io + wc * (Ires_s - Ires_o)
     Io[Io < 0], Io[Io > 255] = 0, 255
     return Io.astype(dtype=np.uint8)
 
 
-def Full_ReshapeHistogram(Is: np.ndarray, It: np.ndarray) -> np.ndarray:
+def full_reshaped_MAE(Is: np.ndarray, It: np.ndarray) -> np.ndarray:
+    """ Compute MAE of "100% reshaped histogram" & "matched histogram using histogram matching" """
+    # Using paper's algorithm
+    test = Reshape_Histogram(Is, It, 100)
+    
+    # Normal histogram matching
     source_lab = cv2.cvtColor(Is, cv2.COLOR_BGR2Lab)
     target_lab = cv2.cvtColor(It, cv2.COLOR_BGR2Lab)
     Io = np.empty_like(source_lab)
@@ -237,15 +253,15 @@ def Full_ReshapeHistogram(Is: np.ndarray, It: np.ndarray) -> np.ndarray:
         Ht = histogram(target_lab[:, :, ic], CH_RANGE[ic], False)
         mask = np.ones_like(source_lab[:, :, ic])
         Io[:, :, ic] = histogram_matching(
-            source_lab[:, :, ic],
-            Hs,
-            Ht,
-            ic,
-            source_lab.shape[0] * source_lab.shape[1],
-            mask
+            source_lab[:, :, ic], Hs, Ht, CH_RANGE[ic],
+            source_lab.shape[0] * source_lab.shape[1], mask
         )
-    output_img = cv2.cvtColor(Io, cv2.COLOR_Lab2BGR)
-    return output_img
+    truth = cv2.cvtColor(Io, cv2.COLOR_Lab2BGR)
+    
+    # Compute mean absolute error
+    diff = test - truth
+    mae = np.mean(abs(diff))
+    return mae
 
 
 if __name__ == "__main__":
@@ -256,7 +272,11 @@ if __name__ == "__main__":
     for perc in PERC:
         print("\n=======================================================")
         print(f">> Start the case of perc = {perc}%")
-        output_img = ReshapeHistogram(source_img, target_img, perc, W_A, False)
+        output_img = Reshape_Histogram(source_img, target_img, perc, W_A, SIMPLE_TRANSFER, False)
         # output_img = contrast_modify(source_img, output_img, 0.1)
         cv2.imwrite(f"Image_Processing/1112_Final_Project/output/output_{NUM}_perc_{perc}.jpg", output_img)
         print(">> done")
+
+    # MAE
+    error = full_reshaped_MAE(source_img, target_img)
+    print(f">> MAE of image with 100% reshaped histogram = {error}")
