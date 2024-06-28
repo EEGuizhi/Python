@@ -14,10 +14,10 @@
 ## Color Transfer Example
 - Source： ![](source/source_01.jpg)
 - Target： ![](target/target_01.jpg)
-- Results：
-    - 100% Transfer： ![](output/ColorTransfer_perc100.png)
-    - 75% Transfer： ![](output/ColorTransfer_perc75.png)
-    - 50% Transfer： ![](output/ColorTransfer_perc50.png)
+- Results (using linear combination)：
+    - 10% Transfer： ![](output/output_01_perc_10.jpg)
+    - 20% Transfer： ![](output/output_01_perc_20.jpg)
+    - 100% Transfer： ![](output/output_01_perc_100.jpg)
 
 
 ## Things that confuse me (& how I deal with)
@@ -34,5 +34,8 @@ and $B_{min}$ (in Eq.7) should be same too, so bins ($B$) amount of source and t
 - Eq.12 is very weird because $h_{o, k}$ doesn't exist when $k = S_{max}$ (at the same time $w_{s, k} = 0$). <br> So I rewrite the equation：
 $$h_{o, k} = (h_{s, k}-\mu_{s, k}) \times \frac{w_{t, k}．\sigma_{t, k} + w_{s, k}．\sigma_{s, k}}{\sigma_{s, k}} + w_{t, k}．\mu_{t, k} + w_{s, k}．\mu_{s, k}$$ <br>
 
-- When RegionTransfer function only transfer one bin, std ($\sigma$) will equals to 0 at the same time. <br> So equation will become： $$h_{o, k} = (h_{s, k}-\mu_{s, k}) + w_{t, k}．\mu_{t, k} + w_{s, k}．\mu_{s, k}$$ <br> (Remove the std term to avoid divided by zero problem.)
+- When RegionTransfer function only transfer one bin, std ($\sigma$) will equals to 0 at the same time. <br>
+So equation will become : $$h_{o, k} = (h_{s, k}-\mu_{s, k}) + w_{t, k} \cdot \mu_{t, k} + w_{s, k} \cdot \mu_{s, k}$$ <br> (Remove the std term to avoid divided by zero problem.)
 
+- Another color tranferring approach I used is : $$h_{o, k} = w_{s, k} \cdot h_{s, k} + w_{t, k} \cdot h_{t, k}$$ <br>
+Even it's a simple linear combination between source and target histograms, the result is really good.
